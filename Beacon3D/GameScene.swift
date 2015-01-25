@@ -37,6 +37,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ButtonPressDelegate {
             motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
                 (data : CMAccelerometerData!, error: NSError!) in
                 // test GitHub push
+				// test GitHub push from YCY
 //                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
 //                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
 //                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
