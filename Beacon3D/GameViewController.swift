@@ -11,6 +11,11 @@ import SpriteKit
 
 class GameViewController: UIViewController {
 
+	
+
+	@IBOutlet weak var gamingView: SKView!
+	@IBOutlet weak var settingView: UIView!
+	
     var scene: GameScene!
     
     override func viewDidLoad() {
@@ -39,18 +44,23 @@ class GameViewController: UIViewController {
         
         // Configure the view.
 
-        let skView = view as SKView
+        let skView = gamingView as SKView
         skView.multipleTouchEnabled = false
-        
+
         // Create and configure the scene.
         scene = GameScene(size: skView.bounds.size)
         scene.scaleMode = .AspectFill
         
         // Present the scene.
         skView.presentScene(scene)
-        
+		
+		
+		
         
     }
+	@IBAction func moreButtonDidTouch(sender: UIButton) {
+		
+	}
 
     override func prefersStatusBarHidden() -> Bool {
         return true
