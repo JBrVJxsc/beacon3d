@@ -10,16 +10,19 @@ import SpriteKit
 import CoreMotion
 import MultipeerConnectivity
 
-class GameScene: SKScene, SKPhysicsContactDelegate, ButtonPressDelegate {
+class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate {
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
     let motionManager: CMMotionManager = CMMotionManager()
     
+    var appDelegate: AppDelegate!
+    var viewController: UIViewController!
+    
     required init(coder aDecoder: NSCoder) {
         fatalError("NSCoder not supported")
     }
-        
+    
     override init(size: CGSize) {
         super.init(size: size)
         
@@ -27,34 +30,45 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ButtonPressDelegate {
         
         initBackground()
         initSensors()
+        initMPC()
+    }
+    
+    func initMPC() {
+        appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
+        appDelegate.mpcHandler.setupPeerWithDisplayName(UIDevice.currentDevice().name)
+        appDelegate.mpcHandler.setupSession()
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "peerChangedStateWithNotification:", name: "MPC_DidChangeStateNotification", object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleReceivedDataWithNotification:", name: "MPC_DidReceiveDataNotification", object: nil)
     }
     
     func initSensors() {
-
+        
         if  motionManager.accelerometerAvailable {
             let speed = 18.0
             motionManager.accelerometerUpdateInterval = 1.0 / 30.0
             motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
                 (data : CMAccelerometerData!, error: NSError!) in
                 // test GitHub push
-				// test GitHub push from YCY
-				// I did stupid thing!!!!
-//                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
-//                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
-//                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
-//                self.ball.runAction(move)
+                // test GitHub push from YCY
+                // I did stupid thing!!!!
+                //                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
+                //                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
+                //                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
+                //                self.ball.runAction(move)
                 
                 self.physicsWorld.gravity = CGVectorMake(CGFloat(data.acceleration.x * 2), CGFloat(data.acceleration.y * 2))
             }
         }
         
-//        if motionManager.gyroAvailable {
-//            motionManager.gyroUpdateInterval = 1.0 / 0.5
-//            motionManager.startGyroUpdatesToQueue(NSOperationQueue.currentQueue()) {
-//            (data : CMGyroData!, error: NSError!) in
-//                println(data.description)
-//            }
-//        }
+        //        if motionManager.gyroAvailable {
+        //            motionManager.gyroUpdateInterval = 1.0 / 0.5
+        //            motionManager.startGyroUpdatesToQueue(NSOperationQueue.currentQueue()) {
+        //            (data : CMGyroData!, error: NSError!) in
+        //                println(data.description)
+        //            }
+        //        }
     }
     
     func makeBall () {
@@ -98,7 +112,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ButtonPressDelegate {
         physicsBody.categoryBitMask = Config.BorderCategory
         
         self.physicsBody = physicsBody
-
+        
         physicsWorld.gravity = CGVectorMake(0, 0)
         physicsWorld.contactDelegate = self
         
@@ -123,15 +137,47 @@ class GameScene: SKScene, SKPhysicsContactDelegate, ButtonPressDelegate {
         }
         
         if firstBody.categoryBitMask == Config.BorderCategory && secondBody.categoryBitMask == Config.BallCategory {
-//            println("Hitted. \(hittedTimes++)")
+            //            println("Hitted. \(hittedTimes++)")
         }
+    }
+    
+    func connectWithPlayer() {
+        if appDelegate.mpcHandler.session != nil {
+            appDelegate.mpcHandler.setupBrowser()
+            appDelegate.mpcHandler.browser.delegate = self
+            viewController.presentViewController(appDelegate.mpcHandler.browser, animated: true, completion: nil)
+        }
+    }
+    
+    func peerChangedStateWithNotification(notification: NSNotification) {
+        let userInfo = NSDictionary(dictionary: notification.userInfo!)
+        let state = userInfo.objectForKey("state") as Int
+        
+        if state != MCSessionState.Connecting.rawValue {
+            viewController.navigationItem.title = "Connected"
+        }
+    }
+    
+    func handleReceivedDataWithNotification(notification: NSNotification) {
+        
+    }
+    
+    func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
+        appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController!) {
+        appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
     }
     
     func didPress() {
         makeBall()
+        connectWithPlayer()
     }
+    
     func didLongPress() {
         println("Long Press!")
+        appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
     }
     
     override func didMoveToView(view: SKView) {

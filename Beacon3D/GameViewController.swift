@@ -16,51 +16,23 @@ class GameViewController: UIViewController {
 	@IBOutlet weak var gamingView: SKView!
 	@IBOutlet weak var settingView: UIView!
 	
-    var scene: GameScene!
+    var gameScene: GameScene!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-//        let filteredSubviews = self.view.subviews.filter({
-//            $0.isKindOfClass(UIImageView) })
-//        // 2
-//        for view in filteredSubviews  {
-//            // 3
-//            let recognizer = UITapGestureRecognizer(target: self, action:Selector("handleTap:"))
-//            // 4
-//            recognizer.delegate = self
-//            view.addGestureRecognizer(recognizer)
-//            
-//            //TODO: Add a custom gesture recognizer too
-//        }
-        
-        
-//        println(self.view.subviews[0])
-//        println(self.view.subviews[1])
-        
-//        let recognizer = UILongPressGestureRecognizer(target: view, action: "handleLongPress")
-//        
-//        recognizer.delegate = scene as SKScene
         
         // Configure the view.
-
         let skView = gamingView as SKView
         skView.multipleTouchEnabled = false
 
         // Create and configure the scene.
-        scene = GameScene(size: skView.bounds.size)
-        scene.scaleMode = .AspectFill
+        gameScene = GameScene(size: skView.bounds.size)
+        gameScene.scaleMode = .AspectFill
         
         // Present the scene.
-        skView.presentScene(scene)
-		
-		
-		
-        
+        gameScene.viewController = self
+        skView.presentScene(gameScene)
     }
-	@IBAction func moreButtonDidTouch(sender: UIButton) {
-		
-	}
 
     override func prefersStatusBarHidden() -> Bool {
         return true
