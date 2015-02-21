@@ -15,6 +15,7 @@ class MPCHandler: NSObject, MCSessionDelegate {
     var session: MCSession!
     var browser: MCBrowserViewController!
     var advertiser: MCAdvertiserAssistant? = nil
+    var advertising: Bool = false
     
     func setupPeerWithDisplayName (displayName: String) {
         peerID = MCPeerID(displayName: displayName)
@@ -33,9 +34,11 @@ class MPCHandler: NSObject, MCSessionDelegate {
         if advertise {
             advertiser = MCAdvertiserAssistant(serviceType: "my-game", discoveryInfo: nil, session: session)
             advertiser!.start()
+            advertising = true
         } else {
-            advertiser!.stop()
+            advertiser!.stop( )
             advertiser = nil
+            advertising = false
         }
     }
     
