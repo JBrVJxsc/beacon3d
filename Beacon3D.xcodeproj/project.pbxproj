@@ -10,7 +10,7 @@
 		1955E6C11A76CF620079DE23 /* SettingViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1955E6C01A76CF620079DE23 /* SettingViewController.swift */; };
 		9507D9A91A641C1300B25793 /* Ball.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9507D9A81A641C1300B25793 /* Ball.swift */; };
 		9507D9AB1A6420D300B25793 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9507D9AA1A6420D300B25793 /* Config.swift */; };
-		9507D9AD1A6438B200B25793 /* PlayerAvatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9507D9AC1A6438B200B25793 /* PlayerAvatar.swift */; };
+		9507D9AD1A6438B200B25793 /* Avatar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9507D9AC1A6438B200B25793 /* Avatar.swift */; };
 		9507D9AF1A64935900B25793 /* MPCHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9507D9AE1A64935900B25793 /* MPCHandler.swift */; };
 		9507D9B11A649B4E00B25793 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 9507D9B01A649B4E00B25793 /* Default-568h@2x.png */; };
 		9507D9B31A649BB400B25793 /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9507D9B21A649BB400B25793 /* Button.swift */; };
@@ -39,7 +39,7 @@
 		1955E6C21A76CFC20079DE23 /* Beacon3D-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Beacon3D-Bridging-Header.h"; sourceTree = "<group>"; };
 		9507D9A81A641C1300B25793 /* Ball.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Ball.swift; sourceTree = "<group>"; };
 		9507D9AA1A6420D300B25793 /* Config.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
-		9507D9AC1A6438B200B25793 /* PlayerAvatar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlayerAvatar.swift; sourceTree = "<group>"; };
+		9507D9AC1A6438B200B25793 /* Avatar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Avatar.swift; sourceTree = "<group>"; };
 		9507D9AE1A64935900B25793 /* MPCHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MPCHandler.swift; sourceTree = "<group>"; };
 		9507D9B01A649B4E00B25793 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		9507D9B21A649BB400B25793 /* Button.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
@@ -108,7 +108,7 @@
 				9544667D1A634EEF00EF690B /* Extensions.swift */,
 				9507D9A81A641C1300B25793 /* Ball.swift */,
 				9507D9AA1A6420D300B25793 /* Config.swift */,
-				9507D9AC1A6438B200B25793 /* PlayerAvatar.swift */,
+				9507D9AC1A6438B200B25793 /* Avatar.swift */,
 				9507D9AE1A64935900B25793 /* MPCHandler.swift */,
 				9507D9B21A649BB400B25793 /* Button.swift */,
 				1955E6C21A76CFC20079DE23 /* Beacon3D-Bridging-Header.h */,
@@ -246,7 +246,7 @@
 				9507D9AF1A64935900B25793 /* MPCHandler.swift in Sources */,
 				954466601A634A1100EF690B /* GameViewController.swift in Sources */,
 				9507D9A91A641C1300B25793 /* Ball.swift in Sources */,
-				9507D9AD1A6438B200B25793 /* PlayerAvatar.swift in Sources */,
+				9507D9AD1A6438B200B25793 /* Avatar.swift in Sources */,
 				1955E6C11A76CF620079DE23 /* SettingViewController.swift in Sources */,
 				9544665A1A634A1100EF690B /* AppDelegate.swift in Sources */,
 				9544667E1A634EEF00EF690B /* Extensions.swift in Sources */,

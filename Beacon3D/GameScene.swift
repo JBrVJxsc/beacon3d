@@ -19,6 +19,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     var appDelegate: AppDelegate!
     var viewController: UIViewController!
     
+    var isHolder: Bool = false
+    
     required init(coder aDecoder: NSCoder) {
         fatalError("NSCoder not supported")
     }
@@ -50,15 +52,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             motionManager.accelerometerUpdateInterval = 1.0 / 30.0
             motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
                 (data : CMAccelerometerData!, error: NSError!) in
-                // test GitHub push
-                // test GitHub push from YCY
-                // I did stupid thing!!!!
-                //                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
-                //                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
-                //                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
-                //                self.ball.runAction(move)
+
+                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
+                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
+                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
+                self.ball.runAction(move)
                 
-                self.physicsWorld.gravity = CGVectorMake(CGFloat(data.acceleration.x * 2), CGFloat(data.acceleration.y * 2))
+                let messageDict = ["type": "AMoving", "x": x, "y": y]
+                let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+                
+                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+                
+//          self.physicsWorld.gravity = CGVectorMake(CGFloat(data.acceleration.x * 2), CGFloat(data.acceleration.y * 2))
             }
         }
         
@@ -121,8 +126,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, ball, button])
     }
     
-    var hittedTimes = 0
-    
     func didBeginContact(contact: SKPhysicsContact) {
         
         var firstBody: SKPhysicsBody
@@ -137,7 +140,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
         
         if firstBody.categoryBitMask == Config.BorderCategory && secondBody.categoryBitMask == Config.BallCategory {
-            //            println("Hitted. \(hittedTimes++)")
         }
     }
     
@@ -156,10 +158,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if state != MCSessionState.Connecting.rawValue {
             viewController.navigationItem.title = "Connected"
         }
+        
+        println(state)
     }
     
     func handleReceivedDataWithNotification(notification: NSNotification) {
+        let userInfo = notification.userInfo! as Dictionary
+        let receivedData: NSData = userInfo["data"] as NSData
         
+        let message = NSJSONSerialization.JSONObjectWithData(receivedData, options: NSJSONReadingOptions.AllowFragments, error: nil) as NSDictionary
+        
+        if message.objectForKey("type") as? String == "AMoving" {
+            
+            let x1: Float? = message.objectForKey("x")?.floatValue
+            let y1: Float? = message.objectForKey("y")?.floatValue
+
+            var x: CGFloat = CGFloat(x1!)
+            var y: CGFloat = CGFloat(y1!)
+            
+            let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
+            self.ball.runAction(move)
+        }
     }
     
     func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
@@ -171,13 +190,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func didPress() {
-        makeBall()
         connectWithPlayer()
     }
     
     func didLongPress() {
-        println("Long Press!")
         appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
+        isHolder = appDelegate.mpcHandler.advertising
     }
     
     override func didMoveToView(view: SKView) {
