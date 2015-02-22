@@ -22,6 +22,7 @@
 		954466681A634A1100EF690B /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 954466661A634A1100EF690B /* LaunchScreen.xib */; };
 		954466741A634A1100EF690B /* Beacon3DTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954466731A634A1100EF690B /* Beacon3DTests.swift */; };
 		9544667E1A634EEF00EF690B /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9544667D1A634EEF00EF690B /* Extensions.swift */; };
+		95B308CA1A992944003D54AD /* MainScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B308C91A992944003D54AD /* MainScene.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -55,6 +56,7 @@
 		954466721A634A1100EF690B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		954466731A634A1100EF690B /* Beacon3DTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Beacon3DTests.swift; sourceTree = "<group>"; };
 		9544667D1A634EEF00EF690B /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
+		95B308C91A992944003D54AD /* MainScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainScene.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,6 +100,7 @@
 			isa = PBXGroup;
 			children = (
 				954466591A634A1100EF690B /* AppDelegate.swift */,
+				95B308C91A992944003D54AD /* MainScene.swift */,
 				9544665D1A634A1100EF690B /* GameScene.swift */,
 				9544665F1A634A1100EF690B /* GameViewController.swift */,
 				1955E6C01A76CF620079DE23 /* SettingViewController.swift */,
@@ -243,6 +246,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9544665E1A634A1100EF690B /* GameScene.swift in Sources */,
+				95B308CA1A992944003D54AD /* MainScene.swift in Sources */,
 				9507D9AF1A64935900B25793 /* MPCHandler.swift in Sources */,
 				954466601A634A1100EF690B /* GameViewController.swift in Sources */,
 				9507D9A91A641C1300B25793 /* Ball.swift in Sources */,

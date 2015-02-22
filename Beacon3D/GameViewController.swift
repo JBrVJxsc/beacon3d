@@ -16,6 +16,7 @@ class GameViewController: UIViewController {
 	@IBOutlet weak var gamingView: SKView!
 	@IBOutlet weak var settingView: UIView!
 	
+    var mainScene: MainScene!
     var gameScene: GameScene!
     
     override func viewDidLoad() {
@@ -24,14 +25,22 @@ class GameViewController: UIViewController {
         // Configure the view.
         let skView = gamingView as SKView
         skView.multipleTouchEnabled = false
-
+        
         // Create and configure the scene.
         gameScene = GameScene(size: skView.bounds.size)
         gameScene.scaleMode = .AspectFill
         
         // Present the scene.
         gameScene.viewController = self
-        skView.presentScene(gameScene)
+        
+        // Create and configure the scene.
+        mainScene = MainScene(size: skView.bounds.size)
+        mainScene.scaleMode = .AspectFill
+        
+        // Present the scene.        
+        mainScene.skView = skView
+        mainScene.gameScene = gameScene
+        skView.presentScene(mainScene)
     }
 
     override func prefersStatusBarHidden() -> Bool {

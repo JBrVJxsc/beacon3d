@@ -189,11 +189,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
     }
     
-    func didPress() {
+    func didPress(sender: Button) {
+        println(sender.name)
+        if isHolder {
+            return
+        }
         connectWithPlayer()
     }
     
-    func didLongPress() {
+    func didLongPress(sender: Button) {
         appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
         isHolder = appDelegate.mpcHandler.advertising
     }
