@@ -49,6 +49,17 @@ class Button: SKShapeNode {
         self.scale = scale
     }
     
+    func startShining(duration: NSTimeInterval) {
+        let smaller = SKAction.scaleTo(scale * 0.8, duration: duration)
+        smaller.timingMode = .EaseOut
+        let bigger = SKAction.scaleTo(scale * 1.1, duration: 0.2)
+        bigger.timingMode = .EaseIn
+        let biggerSmaller = SKAction.scaleTo(scale * 0.9, duration: 0.1)
+        let biggerSmallerBigger = SKAction.scaleTo(scale * 1.0, duration: 0.1)
+        let forever = SKAction.repeatActionForever(SKAction.sequence([smaller, bigger, biggerSmaller, biggerSmallerBigger]))
+        runAction(forever)
+    }
+    
     override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
         if (allowLongPress) {
         

@@ -38,6 +38,7 @@ class MainScene: SKScene, ButtonPressDelegate {
         labelPlay.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         labelPlay.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         buttonPlay.addChild(labelPlay)
+        buttonPlay.startShining(2.5)
         
         buttonConfigure.buttonPressDelegate = self
         buttonConfigure.position = CGPoint(x: Config.ScreenWidth / 3.1, y: -Config.ScreenHeight / 1.5)
@@ -47,6 +48,7 @@ class MainScene: SKScene, ButtonPressDelegate {
         labelConfigure.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         labelConfigure.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         buttonConfigure.addChild(labelConfigure)
+        buttonConfigure.startShining(2)
 
         
         buttonRanking.buttonPressDelegate = self
@@ -57,6 +59,7 @@ class MainScene: SKScene, ButtonPressDelegate {
         labelRanking.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         labelRanking.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         buttonRanking.addChild(labelRanking)
+        buttonRanking.startShining(1)
     }
     
     func initBackground() {
