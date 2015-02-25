@@ -11,8 +11,6 @@ import SpriteKit
 
 class GameViewController: UIViewController {
 
-	
-
 	@IBOutlet weak var gamingView: SKView!
 	@IBOutlet weak var settingView: UIView!
 	
@@ -35,6 +33,7 @@ class GameViewController: UIViewController {
         
         // Create and configure the scene.
         mainScene = MainScene(size: skView.bounds.size)
+        mainScene.viewController = self
         mainScene.scaleMode = .AspectFill
         
         // Present the scene.        

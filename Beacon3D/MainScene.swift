@@ -10,12 +10,15 @@ import SpriteKit
 
 class MainScene: SKScene, ButtonPressDelegate {
     
+    var location = ESTLocation()
+    let locationManager = ESTIndoorLocationManager()
     let buttonPlay = Button(circleOfRadius: Config.ButtonRadius)
     let buttonConfigure = Button(circleOfRadius: Config.ButtonRadius)
     let buttonRanking = Button(circleOfRadius: Config.ButtonRadius)
     
     var skView: SKView!
     var gameScene: GameScene!
+    var viewController: UIViewController!
     
     required init(coder aDecoder: NSCoder) {
         fatalError("NSCoder not supported")
@@ -28,19 +31,26 @@ class MainScene: SKScene, ButtonPressDelegate {
         
         initBackground()
         initButtons()
+        initLocationManager()
+    }
+    
+    func initLocationManager() {
+        ESTConfig.setupAppID("app_28n6m2cfaq", andAppToken: "e6a2c5fcc28276a9ab28de9ea5961dd7")
     }
     
     func initButtons() {
         buttonPlay.buttonPressDelegate = self
+        buttonPlay.allowLongPress = false
         buttonPlay.position = CGPoint(x: Config.ScreenWidth / 1.8, y: -Config.ScreenHeight / 3.0)
         let labelPlay = SKLabelNode(text: "Play")
         labelPlay.fontName = "HelveticaNeue-Bold"
         labelPlay.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         labelPlay.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         buttonPlay.addChild(labelPlay)
-        buttonPlay.startShining(2.5)
+        buttonPlay.startShining(1)
         
         buttonConfigure.buttonPressDelegate = self
+        buttonConfigure.allowLongPress = false
         buttonConfigure.position = CGPoint(x: Config.ScreenWidth / 3.1, y: -Config.ScreenHeight / 1.5)
         buttonConfigure.setScale(0.75)
         let labelConfigure = SKLabelNode(text: "Configure")
@@ -52,6 +62,7 @@ class MainScene: SKScene, ButtonPressDelegate {
 
         
         buttonRanking.buttonPressDelegate = self
+        buttonRanking.allowLongPress = false
         buttonRanking.position = CGPoint(x: Config.ScreenWidth / 1.3, y: -Config.ScreenHeight / 1.63)
         buttonRanking.setScale(0.5)
         let labelRanking = SKLabelNode(text: "Ranking")
@@ -59,7 +70,7 @@ class MainScene: SKScene, ButtonPressDelegate {
         labelRanking.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         labelRanking.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         buttonRanking.addChild(labelRanking)
-        buttonRanking.startShining(1)
+        buttonRanking.startShining(2.5)
     }
     
     func initBackground() {
@@ -70,9 +81,21 @@ class MainScene: SKScene, ButtonPressDelegate {
         addChildren([background, buttonPlay, buttonConfigure, buttonRanking])
     }
     
+    func showLocationSetup() {
+        let locationSetupVC = ESTIndoorLocationManager.locationSetupControllerWithCompletion { (location, error) in
+            println(location)
+        }
+        
+        viewController.presentViewController(UINavigationController(rootViewController: locationSetupVC),
+            animated: true,
+            completion: nil)
+    }
+    
     func didPress(sender: Button) {
         if sender == buttonPlay {
             skView.presentScene(gameScene, transition: SKTransition.fadeWithDuration(1.5))
+        } else if sender == buttonConfigure {
+            showLocationSetup()
         }
     }
     

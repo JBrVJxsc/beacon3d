@@ -146,7 +146,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     func connectWithPlayer() {
         if appDelegate.mpcHandler.session != nil {
             appDelegate.mpcHandler.setupBrowser()
-            appDelegate.mpcHandler.browser.delegate = self
+            appDelegate.mpcHandler.browser.delegate = self            
             viewController.presentViewController(appDelegate.mpcHandler.browser, animated: true, completion: nil)
         }
     }
