@@ -104,11 +104,12 @@ class MainScene: SKScene, ButtonPressDelegate {
             let defaults = NSUserDefaults.standardUserDefaults()
             let location = defaults.dictionaryForKey("location")
             
-            if location != nil {
-                println(location)
-            } else {
-                showLocationSetup()
-            }
+//            if location != nil {
+//                println(location)
+//            } else {
+//                showLocationSetup()
+//            }
+            showLocationSetup()
         }
     }
     
