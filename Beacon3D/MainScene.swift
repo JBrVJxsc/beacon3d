@@ -59,7 +59,6 @@ class MainScene: SKScene, ButtonPressDelegate {
         labelConfigure.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         buttonConfigure.addChild(labelConfigure)
         buttonConfigure.startShining(2)
-
         
         buttonRanking.buttonPressDelegate = self
         buttonRanking.allowLongPress = false
@@ -83,7 +82,14 @@ class MainScene: SKScene, ButtonPressDelegate {
     
     func showLocationSetup() {
         let locationSetupVC = ESTIndoorLocationManager.locationSetupControllerWithCompletion { (location, error) in
-            println(location)
+            
+            self.viewController.dismissViewControllerAnimated(true, completion: nil)
+            if location == nil {
+                
+            } else {
+                let defaults = NSUserDefaults.standardUserDefaults()
+                defaults.setObject(location.toDictionary(), forKey: "location")
+            }
         }
         
         viewController.presentViewController(UINavigationController(rootViewController: locationSetupVC),
@@ -95,7 +101,14 @@ class MainScene: SKScene, ButtonPressDelegate {
         if sender == buttonPlay {
             skView.presentScene(gameScene, transition: SKTransition.fadeWithDuration(1.5))
         } else if sender == buttonConfigure {
-            showLocationSetup()
+            let defaults = NSUserDefaults.standardUserDefaults()
+            let location = defaults.dictionaryForKey("location")
+            
+            if location != nil {
+                println(location)
+            } else {
+                showLocationSetup()
+            }
         }
     }
     
