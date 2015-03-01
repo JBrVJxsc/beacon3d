@@ -10,7 +10,11 @@ import SpriteKit
 import CoreMotion
 import MultipeerConnectivity
 
-class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate {
+protocol ExitDelegate {
+    func didExit(sender: GameScene)
+}
+
+class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate, ESTIndoorLocationManagerDelegate {
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
@@ -156,7 +160,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let state = userInfo.objectForKey("state") as Int
         
         if state != MCSessionState.Connecting.rawValue {
-            viewController.navigationItem.title = "Connected"
+            if !isHolder {
+//                viewController.dismissViewControllerAnimated(true, completion: nil)
+                println("dismiss")
+            }
         }
         
         println(state)
@@ -200,6 +207,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     func didLongPress(sender: Button) {
         appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
         isHolder = appDelegate.mpcHandler.advertising
+    }
+    
+    func indoorLocationManager(manager: ESTIndoorLocationManager!, didUpdatePosition position: ESTOrientedPoint!, inLocation location: ESTLocation!) {
+        
+        let text = NSString(format: "x: %.2f   y: %.2f    α: %.2f",
+            position.x,
+            position.y,
+            position.orientation)
+    }
+    
+    func indoorLocationManager(manager: ESTIndoorLocationManager!, didFailToUpdatePositionWithError error: NSError!) {
+        
+        let text = "It seems you are outside the location."
+        let err = NSLog(error.localizedDescription)
     }
     
     override func didMoveToView(view: SKView) {

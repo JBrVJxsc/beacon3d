@@ -41,7 +41,7 @@ class MainScene: SKScene, ButtonPressDelegate {
     func initButtons() {
         buttonPlay.buttonPressDelegate = self
         buttonPlay.allowLongPress = false
-        buttonPlay.position = CGPoint(x: Config.ScreenWidth / 1.8, y: -Config.ScreenHeight / 3.0)
+        buttonPlay.position = CGPoint(x: Config.ScreenWidth / 1.9, y: -Config.ScreenHeight / 2.31)
         let labelPlay = SKLabelNode(text: "Play")
         labelPlay.fontName = "HelveticaNeue-Bold"
         labelPlay.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
@@ -51,7 +51,7 @@ class MainScene: SKScene, ButtonPressDelegate {
         
         buttonConfigure.buttonPressDelegate = self
         buttonConfigure.allowLongPress = false
-        buttonConfigure.position = CGPoint(x: Config.ScreenWidth / 3.1, y: -Config.ScreenHeight / 1.5)
+        buttonConfigure.position = CGPoint(x: Config.ScreenWidth / 3.1, y: -Config.ScreenHeight / 1.25)
         buttonConfigure.setScale(0.75)
         let labelConfigure = SKLabelNode(text: "Configure")
         labelConfigure.fontName = "HelveticaNeue-Bold"
@@ -62,7 +62,7 @@ class MainScene: SKScene, ButtonPressDelegate {
         
         buttonRanking.buttonPressDelegate = self
         buttonRanking.allowLongPress = false
-        buttonRanking.position = CGPoint(x: Config.ScreenWidth / 1.3, y: -Config.ScreenHeight / 1.63)
+        buttonRanking.position = CGPoint(x: Config.ScreenWidth / 1.3, y: -Config.ScreenHeight / 1.39)
         buttonRanking.setScale(0.5)
         let labelRanking = SKLabelNode(text: "Ranking")
         labelRanking.fontName = "HelveticaNeue-Bold"
@@ -76,8 +76,13 @@ class MainScene: SKScene, ButtonPressDelegate {
         let background = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScreenSize)
         background.position = Config.BackgroundPosition
         
+        let title = SKLabelNode(text: "Beacon 3D")
+        title.fontName = "HelveticaNeue-Bold"
+        title.position = CGPoint(x: Config.ScreenWidth / 2, y: -Config.ScreenHeight / 6.5)
+        title.fontSize = title.fontSize * 1.5
+        
         setAnorPoint([background])
-        addChildren([background, buttonPlay, buttonConfigure, buttonRanking])
+        addChildren([background, title, buttonPlay, buttonConfigure, buttonRanking])
     }
     
     func showLocationSetup() {
