@@ -19,6 +19,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
     let motionManager: CMMotionManager = CMMotionManager()
+    var timer: NSTimer!
+    var firstFire: Bool = true
     
     let labelWaiting = SKLabelNode(text: "Waiting")
     let labelHint = SKLabelNode(text: "")
@@ -44,8 +46,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         initBackground()
         initSensors()
         initMPC()
-        initLabelHint()
-        animateLabels(true)
+        initLabels()
+        initHintTimer()
     }
     
     func initMPC() {
@@ -89,11 +91,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         //        }
     }
     
-    func initLabelHint() {
+    func initHintTimer() {
+        firstFire = true
+        if timer != nil {
+            timer.invalidate()
+        }
+        timer = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: Selector("fire"), userInfo: nil, repeats: true)
+        timer.fire()
+    }
+    
+    func fire() {
+        if firstFire {
+            firstFire = false
+            return
+        }
+        animateLabels(true)
+        timer.invalidate()
+    }
+    
+    func initLabels() {
         labelHint.fontName = "HelveticaNeue-Bold"
         labelHint.fontSize = labelHint.fontSize * 1.5
         labelHint.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         labelHint.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
+        let hintFadeOut = SKAction.fadeOutWithDuration(0.01)
+        labelHint.runAction(hintFadeOut)
         
         labelWaiting.fontName = "HelveticaNeue-Bold"
         labelWaiting.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
@@ -122,6 +144,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         } else {
             hintIndex = 0
             labelHint.hidden = true
+            let hintFadeOut = SKAction.fadeOutWithDuration(0.01)
+            labelHint.runAction(hintFadeOut)
             labelHint.removeAllActions()
         }
     }
@@ -262,7 +286,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func didLongPress(sender: Button) {
         switchAdvertising()
-        animateLabels(!isHolder)
+        if !isHolder {
+            initHintTimer()
+        } else {
+            animateLabels(!isHolder)
+        }
         labelWaiting.hidden = !isHolder
     }
     
