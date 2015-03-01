@@ -10,8 +10,8 @@ import SpriteKit
 import CoreMotion
 import MultipeerConnectivity
 
-protocol ExitDelegate {
-    func didExit(sender: GameScene)
+protocol GameSceneExitDelegate {
+    func gameSceneDidExit(sender: GameScene)
 }
 
 class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate, ESTIndoorLocationManagerDelegate {
@@ -20,7 +20,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     let button = Button(circleOfRadius: Config.ButtonRadius)
     let motionManager: CMMotionManager = CMMotionManager()
     
+    let labelWaiting = SKLabelNode(text: "Waiting")
+    let labelHint = SKLabelNode(text: "")
+    let hints = ["Hold", "To", "Create", "Game", "Touch", "To", "Join", "Game"]
+    var hintIndex = 0
+    
     var appDelegate: AppDelegate!
+    var gameSceneExitDelegate: GameSceneExitDelegate!
     var viewController: UIViewController!
     
     var isHolder: Bool = false
@@ -33,10 +39,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         super.init(size: size)
         
         anchorPoint = CGPoint(x: 0, y: 1.0)
+        scaleMode = .AspectFill
         
         initBackground()
         initSensors()
         initMPC()
+        initLabelHint()
+        animateLabels(true)
     }
     
     func initMPC() {
@@ -78,6 +87,43 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         //                println(data.description)
         //            }
         //        }
+    }
+    
+    func initLabelHint() {
+        labelHint.fontName = "HelveticaNeue-Bold"
+        labelHint.fontSize = labelHint.fontSize * 1.5
+        labelHint.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
+        labelHint.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
+        
+        labelWaiting.fontName = "HelveticaNeue-Bold"
+        labelWaiting.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
+        labelWaiting.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
+        labelWaiting.hidden = true
+        
+        button.addChild(labelHint)
+        button.addChild(labelWaiting)
+    }
+    
+    func animateLabels(b: Bool) {
+        if b {
+            let hintFadeDuration = 0.5
+            let hintFadeIn = SKAction.fadeInWithDuration(hintFadeDuration)
+            let hintFadeOut = SKAction.fadeOutWithDuration(hintFadeDuration)
+            let actionHint = SKAction.sequence([hintFadeIn, hintFadeOut])
+            labelHint.hidden = false
+            labelHint.text = hints[hintIndex]
+            labelHint.runAction(actionHint, completion: { () -> Void in
+                self.hintIndex++
+                if self.hintIndex == self.hints.count {
+                    self.hintIndex = 0
+                }
+                self.animateLabels(true)
+            })
+        } else {
+            hintIndex = 0
+            labelHint.hidden = true
+            labelHint.removeAllActions()
+        }
     }
     
     func makeBall () {
@@ -155,14 +201,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
     }
     
+    func switchAdvertising() {
+        appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
+        isHolder = appDelegate.mpcHandler.advertising
+    }
+    
+    func exitGameScene() {
+        appDelegate.mpcHandler.advertiseSelf(false)
+        isHolder = appDelegate.mpcHandler.advertising
+        gameSceneExitDelegate.gameSceneDidExit(self)
+    }
+    
     func peerChangedStateWithNotification(notification: NSNotification) {
         let userInfo = NSDictionary(dictionary: notification.userInfo!)
         let state = userInfo.objectForKey("state") as Int
         
         if state != MCSessionState.Connecting.rawValue {
             if !isHolder {
-//                viewController.dismissViewControllerAnimated(true, completion: nil)
-                println("dismiss")
+                viewController.dismissViewControllerAnimated(true, completion: nil)
             }
         }
         
@@ -197,16 +253,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func didPress(sender: Button) {
-        println(sender.name)
         if isHolder {
+            exitGameScene()
             return
         }
         connectWithPlayer()
     }
     
     func didLongPress(sender: Button) {
-        appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
-        isHolder = appDelegate.mpcHandler.advertising
+        switchAdvertising()
+        animateLabels(!isHolder)
+        labelWaiting.hidden = !isHolder
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didUpdatePosition position: ESTOrientedPoint!, inLocation location: ESTLocation!) {

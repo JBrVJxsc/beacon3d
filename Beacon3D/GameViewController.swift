@@ -15,7 +15,6 @@ class GameViewController: UIViewController {
 	@IBOutlet weak var settingView: UIView!
 	
     var mainScene: MainScene!
-    var gameScene: GameScene!
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,20 +24,12 @@ class GameViewController: UIViewController {
         skView.multipleTouchEnabled = false
         
         // Create and configure the scene.
-        gameScene = GameScene(size: skView.bounds.size)
-        gameScene.scaleMode = .AspectFill
-        
-        // Present the scene.
-        gameScene.viewController = self
-        
-        // Create and configure the scene.
         mainScene = MainScene(size: skView.bounds.size)
         mainScene.viewController = self
         mainScene.scaleMode = .AspectFill
         
         // Present the scene.        
         mainScene.skView = skView
-        mainScene.gameScene = gameScene
         skView.presentScene(mainScene)
     }
 

@@ -8,7 +8,7 @@
 
 import SpriteKit
 
-class MainScene: SKScene, ButtonPressDelegate {
+class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
     
     var location = ESTLocation()
     let locationManager = ESTIndoorLocationManager()
@@ -17,7 +17,6 @@ class MainScene: SKScene, ButtonPressDelegate {
     let buttonRanking = Button(circleOfRadius: Config.ButtonRadius)
     
     var skView: SKView!
-    var gameScene: GameScene!
     var viewController: UIViewController!
     
     required init(coder aDecoder: NSCoder) {
@@ -104,6 +103,10 @@ class MainScene: SKScene, ButtonPressDelegate {
     
     func didPress(sender: Button) {
         if sender == buttonPlay {
+            let gameScene = GameScene(size: skView.bounds.size)
+            gameScene.viewController = self.viewController
+            gameScene.gameSceneExitDelegate = self
+            
             skView.presentScene(gameScene, transition: SKTransition.fadeWithDuration(1.5))
         } else if sender == buttonConfigure {
             let defaults = NSUserDefaults.standardUserDefaults()
@@ -120,5 +123,9 @@ class MainScene: SKScene, ButtonPressDelegate {
     
     func didLongPress(sender: Button) {
         
+    }
+    
+    func gameSceneDidExit(sender: GameScene) {
+        skView.presentScene(self, transition: SKTransition.fadeWithDuration(1.5))
     }
 }
