@@ -283,7 +283,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     func didLongPress(sender: Button) {
         switchAdvertising()
         if !isHolder {
-            let hintFadeOut = SKAction.fadeOutWithDuration(0.2)
+            let hintFadeOut = SKAction.fadeOutWithDuration(0.4)
             labelHint.runAction(hintFadeOut)
             initHintTimer()
         } else {
