@@ -22,7 +22,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     var timer: NSTimer!
     var firstFire: Bool = true
     
-    let labelWaiting = SKLabelNode(text: "Waiting")
     let labelHint = SKLabelNode(text: "")
     let hints = ["Hold", "To", "Create", "Game", "Touch", "To", "Join", "Game"]
     var hintIndex = 0
@@ -96,16 +95,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if timer != nil {
             timer.invalidate()
         }
-        timer = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: Selector("fire"), userInfo: nil, repeats: true)
+        timer = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: Selector("hintFire"), userInfo: nil, repeats: true)
         timer.fire()
     }
     
-    func fire() {
+    func hintFire() {
         if firstFire {
             firstFire = false
             return
         }
-        animateLabels(true)
+        animateHint(true)
         timer.invalidate()
     }
     
@@ -117,36 +116,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let hintFadeOut = SKAction.fadeOutWithDuration(0.01)
         labelHint.runAction(hintFadeOut)
         
-        labelWaiting.fontName = "HelveticaNeue-Bold"
-        labelWaiting.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
-        labelWaiting.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
-        labelWaiting.hidden = true
-        
         button.addChild(labelHint)
-        button.addChild(labelWaiting)
     }
     
-    func animateLabels(b: Bool) {
+    func animateHint(b: Bool) {
         if b {
             let hintFadeDuration = 0.5
             let hintFadeIn = SKAction.fadeInWithDuration(hintFadeDuration)
             let hintFadeOut = SKAction.fadeOutWithDuration(hintFadeDuration)
             let actionHint = SKAction.sequence([hintFadeIn, hintFadeOut])
-            labelHint.hidden = false
             labelHint.text = hints[hintIndex]
             labelHint.runAction(actionHint, completion: { () -> Void in
                 self.hintIndex++
                 if self.hintIndex == self.hints.count {
                     self.hintIndex = 0
                 }
-                self.animateLabels(true)
+                self.animateHint(true)
             })
         } else {
             hintIndex = 0
-            labelHint.hidden = true
-            let hintFadeOut = SKAction.fadeOutWithDuration(0.01)
-            labelHint.runAction(hintFadeOut)
-            labelHint.removeAllActions()
+            self.labelHint.removeAllActions()
+            let hintFadeOut = SKAction.fadeOutWithDuration(0.5)
+            labelHint.runAction(hintFadeOut, completion: { () -> Void in
+                self.labelHint.text = "Waiting"
+                let wait = SKAction.waitForDuration(0.2)
+                let fadeIn = SKAction.fadeInWithDuration(0.5)
+                self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
+            })
         }
     }
     
@@ -287,11 +283,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     func didLongPress(sender: Button) {
         switchAdvertising()
         if !isHolder {
+            let hintFadeOut = SKAction.fadeOutWithDuration(0.2)
+            labelHint.runAction(hintFadeOut)
             initHintTimer()
         } else {
-            animateLabels(!isHolder)
+            animateHint(false)
         }
-        labelWaiting.hidden = !isHolder
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didUpdatePosition position: ESTOrientedPoint!, inLocation location: ESTLocation!) {
