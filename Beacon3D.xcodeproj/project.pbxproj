@@ -23,6 +23,8 @@
 		954466741A634A1100EF690B /* Beacon3DTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 954466731A634A1100EF690B /* Beacon3DTests.swift */; };
 		9544667E1A634EEF00EF690B /* Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9544667D1A634EEF00EF690B /* Extensions.swift */; };
 		95B308CA1A992944003D54AD /* MainScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95B308C91A992944003D54AD /* MainScene.swift */; };
+		95BB97BC1AA4F28600548F87 /* ScoreBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BB97BB1AA4F28600548F87 /* ScoreBoard.swift */; };
+		95BB97BE1AA511D400548F87 /* Math.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BB97BD1AA511D400548F87 /* Math.swift */; };
 		95FDAA871A9CF1A300A860BD /* libEstimoteIndoorSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FDAA481A9CF1A300A860BD /* libEstimoteIndoorSDK.a */; };
 		95FDAA881A9CF1A300A860BD /* 5a.mov in Resources */ = {isa = PBXBuildFile; fileRef = 95FDAA4A1A9CF1A300A860BD /* 5a.mov */; };
 		95FDAA891A9CF1A300A860BD /* 5b.mov in Resources */ = {isa = PBXBuildFile; fileRef = 95FDAA4B1A9CF1A300A860BD /* 5b.mov */; };
@@ -102,6 +104,8 @@
 		954466731A634A1100EF690B /* Beacon3DTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Beacon3DTests.swift; sourceTree = "<group>"; };
 		9544667D1A634EEF00EF690B /* Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Extensions.swift; sourceTree = "<group>"; };
 		95B308C91A992944003D54AD /* MainScene.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MainScene.swift; sourceTree = "<group>"; };
+		95BB97BB1AA4F28600548F87 /* ScoreBoard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScoreBoard.swift; sourceTree = "<group>"; };
+		95BB97BD1AA511D400548F87 /* Math.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Math.swift; sourceTree = "<group>"; };
 		95FDAA3F1A9CF1A300A860BD /* ESTIndoorLocationManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ESTIndoorLocationManager.h; sourceTree = "<group>"; };
 		95FDAA401A9CF1A300A860BD /* ESTIndoorLocationView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ESTIndoorLocationView.h; sourceTree = "<group>"; };
 		95FDAA411A9CF1A300A860BD /* ESTLocation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ESTLocation.h; sourceTree = "<group>"; };
@@ -257,6 +261,8 @@
 				9507D9AE1A64935900B25793 /* MPCHandler.swift */,
 				9507D9B21A649BB400B25793 /* Button.swift */,
 				1955E6C21A76CFC20079DE23 /* Beacon3D-Bridging-Header.h */,
+				95BB97BB1AA4F28600548F87 /* ScoreBoard.swift */,
+				95BB97BD1AA511D400548F87 /* Math.swift */,
 			);
 			path = Beacon3D;
 			sourceTree = "<group>";
@@ -538,8 +544,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				9544665E1A634A1100EF690B /* GameScene.swift in Sources */,
+				95BB97BE1AA511D400548F87 /* Math.swift in Sources */,
 				95B308CA1A992944003D54AD /* MainScene.swift in Sources */,
 				9507D9AF1A64935900B25793 /* MPCHandler.swift in Sources */,
+				95BB97BC1AA4F28600548F87 /* ScoreBoard.swift in Sources */,
 				954466601A634A1100EF690B /* GameViewController.swift in Sources */,
 				9507D9A91A641C1300B25793 /* Ball.swift in Sources */,
 				9507D9AD1A6438B200B25793 /* Avatar.swift in Sources */,

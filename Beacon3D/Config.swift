@@ -43,6 +43,7 @@ struct Config {
     static var ButtonPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: -ScreenWidth - (ScreenHeight - ScreenWidth) / 2)
     static var ButtonBorderWidth: CGFloat = ButtonRadius * 0.15
     static var ButtonBorderColor: Int = 0xE3E536
+    static var ButtonPositionInGaming = CGPoint(x: ButtonPosition.x, y: -ScreenHeight * 0.9)
     
     static var BorderColor: Int = 0x3896BA
     static var BorderCategory: UInt32 = 0x1 << 0
@@ -58,4 +59,10 @@ struct Config {
     static var GameBoardHeight: CGFloat = GameBoardWidth * GameBoardWidthHeightRatio
     static var GameBoardSize: CGSize = CGSize(width: GameBoardWidth, height: GameBoardHeight)
     static var GameBoardRect: CGRect = CGRect(x: GameBoardPosition.x, y: GameBoardPosition.y - GameBoardHeight, width: GameBoardWidth, height: GameBoardHeight)
+    
+    static var ScoreBoardPosition: CGPoint = CGPoint(x: 0, y: GameBoardPosition.y - GameBoardHeight)
+    static var ScoreBoardWidth: CGFloat = ScreenWidth
+    static var ScoreBoardHeight: CGFloat = 50
+    static var ScoreBoardRect: CGRect = CGRect(x: ScoreBoardPosition.x, y: ScoreBoardPosition.y - ScoreBoardHeight, width: ScoreBoardWidth, height: ScoreBoardHeight)
+    static var ScoreBoardBorderWidth: CGFloat = BorderWidth
 }

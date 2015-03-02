@@ -18,6 +18,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
+    let scoreBoard = ScoreBoard(rect: Config.ScoreBoardRect)
     let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
     let avatarOpponent = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarOpponentPosition, isOpponent: true)
     
@@ -115,8 +116,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func initAvatars() {
         let fadeOut = SKAction.fadeOutWithDuration(0.01)
-//        avatar.runAction(fadeOut)
-//        avatarOpponent.runAction(fadeOut)
+        let rotate = SKAction.rotateByAngle(Math.degreesToRadians(180), duration: 0.01)
+        avatar.runAction(fadeOut)
+        avatarOpponent.runAction(SKAction.group([fadeOut, rotate]))
+        avatar.hidden = true
+        avatarOpponent.hidden = true
+        
         addChildren([avatar, avatarOpponent])
     }
     
@@ -197,10 +202,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     func startGame() {
         isGaming = true
         button.allowLongPress = false
+        let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.8)
         
         if isHolder {
             button.removeAllActions()
-            let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.8)
             button.runAction(fadeIn, completion: { () -> Void in
                 self.button.isAnimating = false
                 self.button.isWaiting = false
@@ -221,11 +226,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
 
         let small = SKAction.scaleTo(0.35, duration: 0.8)
         small.timingMode = .EaseOut
-        let move = SKAction.moveTo(CGPoint(x: button.position.x, y: -Config.ScreenHeight * 0.9), duration: 0.8)
+        let move = SKAction.moveTo(Config.ButtonPositionInGaming, duration: 0.8)
         move.timingMode = .EaseOut
-        button.runAction(SKAction.group([small, move]))
+//        button.runAction(SKAction.group([small, move]))
+        button.runAction(SKAction.group([small, move]), completion: { () -> Void in
+            self.addChild(self.scoreBoard)
+        })
         
-        
+        avatar.hidden = false
+        avatarOpponent.hidden = false
+        avatar.runAction(fadeIn)
+        avatarOpponent.runAction(fadeIn)
     }
     
     func peerChangedStateWithNotification(notification: NSNotification) {
@@ -263,13 +274,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func didPress(sender: Button) {
         if isHolder && !isGaming {
-            exitGameScene()
             return
         }
         if !isGaming {
             connectWithPlayer()
         } else {
-            
+            exitGameScene()
         }
     }
     
