@@ -80,7 +80,8 @@ class Button: SKShapeNode {
         }
         
         fillColor = UIColor(netHex: Config.ButtonBorderColor)
-        strokeColor = UIColor(netHex: Config.ButtonBorderColor)    }
+        strokeColor = UIColor(netHex: Config.ButtonBorderColor)
+    }
     
     override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
         if (allowLongPress) {

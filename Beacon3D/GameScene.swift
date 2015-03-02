@@ -31,6 +31,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     var viewController: UIViewController!
     
     var isHolder: Bool = false
+    var isGaming: Bool = false
     
     required init(coder aDecoder: NSCoder) {
         fatalError("NSCoder not supported")
@@ -146,56 +147,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
     }
     
-    func makeBall () {
-        let ball = Ball.getBall(Config.BallRadius, position: CGPoint(x: Config.BallPositionMinX, y: Config.BallPositionMinY))
-        ball.fillColor =  UIColor(netHex: Config.ButtonColor)
-        addChild(ball)
-        
-        let duration = 1.0
-        let moveAction = SKAction.moveTo(CGPoint(x: Config.BallPositionMaxX, y: Config.BallPositionMaxY), duration: duration)
-        moveAction.timingMode = .EaseInEaseOut
-        
-        let scaleToBig = SKAction.scaleBy(3.0, duration: duration / 2)
-        let scaleToSmall = SKAction.scaleBy(0.25, duration: duration / 2)
-        let scaleSeq = SKAction.sequence([scaleToBig, scaleToSmall])
-        scaleSeq.timingMode = .EaseInEaseOut
-        ball.runAction(SKAction.group([moveAction, scaleSeq]))
-    }
-    
-    func initBackground() {
-        
-        let background = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScreenSize)
-        background.position = Config.BackgroundPosition
-        
-        let gameBoard = SKSpriteNode(color: UIColor(netHex: Config.GameBoardColor), size: Config.GameBoardSize)
-        gameBoard.position = Config.GameBoardPosition
-        
-        let leftBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.BorderWidth, Config.ScreenSize.width))
-        leftBorder.position = CGPoint(x: 0, y: 0)
-        
-        let topBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
-        topBorder.position = CGPoint(x: Config.BorderWidth, y: 0)
-        
-        let rightBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.BorderWidth, Config.ScreenSize.width))
-        rightBorder.position = CGPoint(x: Config.ScreenSize.width - Config.BorderWidth, y: 0)
-        
-        let bottomBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
-        bottomBorder.position = CGPoint(x: Config.BorderWidth, y: -Config.ScreenSize.width + Config.BorderWidth)
-        
-        let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
-        physicsBody.friction = 2000
-        physicsBody.categoryBitMask = Config.BorderCategory
-        
-        self.physicsBody = physicsBody
-        
-        physicsWorld.gravity = CGVectorMake(0, 0)
-        physicsWorld.contactDelegate = self
-        
-        button.buttonPressDelegate = self
-        setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder])
-        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, ball, button])
-    }
-    
     func didBeginContact(contact: SKPhysicsContact) {
         
         var firstBody: SKPhysicsBody
@@ -232,14 +183,47 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         gameSceneExitDelegate.gameSceneDidExit(self)
     }
     
+    func startGame() {
+        isGaming = true
+        button.allowLongPress = false
+        
+        if isHolder {
+            button.removeAllActions()
+            let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.8)
+            button.runAction(fadeIn, completion: { () -> Void in
+                self.button.isAnimating = false
+                self.button.isWaiting = false
+            })
+            button.fillColor = UIColor(netHex: Config.ButtonColor)
+            button.strokeColor = UIColor(netHex: Config.ButtonColor)
+        }
+        
+        labelHint.removeAllActions()
+        let fadeOut = SKAction.fadeOutWithDuration(0.5)
+        labelHint.runAction(fadeOut, completion: { () -> Void in
+            self.labelHint.text = "| |"
+            self.labelHint.fontSize = self.labelHint.fontSize * 1.5
+            let wait = SKAction.waitForDuration(0.2)
+            let fadeIn = SKAction.fadeInWithDuration(0.5)
+            self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
+        })
+
+        let small = SKAction.scaleTo(0.35, duration: 0.8)
+        small.timingMode = .EaseOut
+        let move = SKAction.moveTo(CGPoint(x: button.position.x, y: -Config.ScreenHeight * 0.9), duration: 0.8)
+        move.timingMode = .EaseOut
+        button.runAction(SKAction.group([small, move]))
+    }
+    
     func peerChangedStateWithNotification(notification: NSNotification) {
         let userInfo = NSDictionary(dictionary: notification.userInfo!)
         let state = userInfo.objectForKey("state") as Int
         
-        if state != MCSessionState.Connecting.rawValue {
+        if state == MCSessionState.Connected.rawValue {
             if !isHolder {
                 viewController.dismissViewControllerAnimated(true, completion: nil)
             }
+            startGame()
         }
         
         println(state)
@@ -264,20 +248,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
     }
     
-    func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
-        appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
-    }
-    
-    func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController!) {
-        appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
-    }
-    
     func didPress(sender: Button) {
-        if isHolder {
+        if isHolder && !isGaming {
             exitGameScene()
             return
         }
-        connectWithPlayer()
+        if !isGaming {
+            connectWithPlayer()
+        } else {
+            
+        }
     }
     
     func didLongPress(sender: Button) {
@@ -303,6 +283,64 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         
         let text = "It seems you are outside the location."
         let err = NSLog(error.localizedDescription)
+    }
+    
+    func initBackground() {
+        
+        let background = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScreenSize)
+        background.position = Config.BackgroundPosition
+        
+        let gameBoard = SKSpriteNode(color: UIColor(netHex: Config.GameBoardColor), size: Config.GameBoardSize)
+        gameBoard.position = Config.GameBoardPosition
+        
+        let leftBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.BorderWidth, Config.ScreenSize.width))
+        leftBorder.position = CGPoint(x: 0, y: 0)
+        
+        let topBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
+        topBorder.position = CGPoint(x: Config.BorderWidth, y: 0)
+        
+        let rightBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.BorderWidth, Config.ScreenSize.width))
+        rightBorder.position = CGPoint(x: Config.ScreenSize.width - Config.BorderWidth, y: 0)
+        
+        let bottomBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
+        bottomBorder.position = CGPoint(x: Config.BorderWidth, y: -Config.ScreenSize.width + Config.BorderWidth)
+        
+        let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
+        physicsBody.friction = 2000
+        physicsBody.categoryBitMask = Config.BorderCategory
+        
+        self.physicsBody = physicsBody
+        
+        physicsWorld.gravity = CGVectorMake(0, 0)
+        physicsWorld.contactDelegate = self
+        
+        button.buttonPressDelegate = self
+        setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder])
+        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, ball, button])
+    }
+    
+    func makeBall () {
+        let ball = Ball.getBall(Config.BallRadius, position: CGPoint(x: Config.BallPositionMinX, y: Config.BallPositionMinY))
+        ball.fillColor =  UIColor(netHex: Config.ButtonColor)
+        addChild(ball)
+        
+        let duration = 1.0
+        let moveAction = SKAction.moveTo(CGPoint(x: Config.BallPositionMaxX, y: Config.BallPositionMaxY), duration: duration)
+        moveAction.timingMode = .EaseInEaseOut
+        
+        let scaleToBig = SKAction.scaleBy(3.0, duration: duration / 2)
+        let scaleToSmall = SKAction.scaleBy(0.25, duration: duration / 2)
+        let scaleSeq = SKAction.sequence([scaleToBig, scaleToSmall])
+        scaleSeq.timingMode = .EaseInEaseOut
+        ball.runAction(SKAction.group([moveAction, scaleSeq]))
+    }
+    
+    func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
+        appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController!) {
+        appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
     }
     
     override func didMoveToView(view: SKView) {
