@@ -18,6 +18,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
+    let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
+    let avatarOpponent = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarOpponentPosition, isOpponent: true)
+    
     let motionManager: CMMotionManager = CMMotionManager()
     var timer: NSTimer!
     var firstFire: Bool = true
@@ -47,6 +50,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         initSensors()
         initMPC()
         initLabels()
+        initAvatars()
         initHintTimer()
     }
     
@@ -107,6 +111,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
         animateHint(true)
         timer.invalidate()
+    }
+    
+    func initAvatars() {
+        let fadeOut = SKAction.fadeOutWithDuration(0.01)
+//        avatar.runAction(fadeOut)
+//        avatarOpponent.runAction(fadeOut)
+        addChildren([avatar, avatarOpponent])
     }
     
     func initLabels() {
@@ -213,6 +224,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let move = SKAction.moveTo(CGPoint(x: button.position.x, y: -Config.ScreenHeight * 0.9), duration: 0.8)
         move.timingMode = .EaseOut
         button.runAction(SKAction.group([small, move]))
+        
+        
     }
     
     func peerChangedStateWithNotification(notification: NSNotification) {

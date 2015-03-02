@@ -15,10 +15,12 @@ struct Config {
     static var ScreenHeight: CGFloat = ScreenSize.height
     
     static var AvatarRadius: CGFloat = 1.5 * BallRadius
-    static var AvatarColor: Int = 0xFFC107
+    static var AvatarColor: Int = ButtonBorderColor
+    static var AvatarOpponentColor: Int = 0xEF5350
     static var AvatarCategoryName = "avatar"
     static var AvatarCategory: UInt32 = 0x1 << 2
-    static var AvatarPosition: CGPoint = CGPoint(x: AvatarPositionMinX, y: AvatarPositionMaxY)
+    static var AvatarPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: GameBoardPosition.y - GameBoardHeight + AvatarRadius * 2)
+    static var AvatarOpponentPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: GameBoardPosition.y - AvatarRadius * 2)
     static var AvatarPositionMinX: CGFloat = BorderWidth + AvatarRadius
     static var AvatarPositionMaxX: CGFloat = ScreenWidth - BorderWidth - AvatarRadius
     static var AvatarPositionMinY: CGFloat = -BorderWidth - GameBoardHeight + AvatarRadius

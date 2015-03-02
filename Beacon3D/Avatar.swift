@@ -10,10 +10,13 @@ import SpriteKit
 
 enum Avatar {
     
-    static func getAvatar (circleOfRadius: CGFloat, position: CGPoint) -> SKShapeNode {
+    static func getAvatar (circleOfRadius: CGFloat, position: CGPoint, isOpponent: Bool) -> SKShapeNode {
         let avatar = SKShapeNode(circleOfRadius: circleOfRadius)
-        avatar.fillColor = UIColor(netHex: Config.AvatarColor)
-        avatar.strokeColor = UIColor(netHex: Config.AvatarColor)
+        if isOpponent {
+            avatar.fillColor = UIColor(netHex: Config.AvatarOpponentColor)
+        } else {
+            avatar.fillColor = UIColor(netHex: Config.AvatarColor)
+        }
         avatar.position = position
         avatar.physicsBody = SKPhysicsBody(circleOfRadius: circleOfRadius)
         avatar.physicsBody!.applyImpulse(CGVectorMake(0, 0))
@@ -25,6 +28,14 @@ enum Avatar {
         avatar.physicsBody!.restitution = 1
         avatar.physicsBody!.linearDamping = 0
         avatar.physicsBody!.angularDamping = 0
+        
+        let label = SKLabelNode(text: "^")
+        label.fontName = "HelveticaNeue"
+        label.fontSize = label.fontSize * 1.1
+        label.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
+        label.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
+        avatar.addChild(label)
+        
         return avatar
     }
     
