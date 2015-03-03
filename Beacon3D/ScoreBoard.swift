@@ -17,14 +17,9 @@ class ScoreBoard: SKShapeNode {
         
         userInteractionEnabled = true
         
-//        fillColor = UIColor(netHex: Config.GameBoardColor)
+        fillColor = UIColor(netHex: Config.GameBoardColor)
         strokeColor = UIColor(netHex: Config.BorderColor)
         lineWidth = Config.BorderWidth
-
-//        let border = SKShapeNode(rectOfSize: Config.ScoreBoardSize)
-//        border.strokeColor = UIColor(netHex: Config.ButtonBorderColor)
-//        border.lineWidth = Config.ScoreBoardBorderWidth
-//        addChild(border)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -32,7 +27,11 @@ class ScoreBoard: SKShapeNode {
     }
     
     func setAvatar(isOpponent: Bool) {
-        
+        if isOpponent {
+            labelScore.fontColor = UIColor(netHex: Config.AvatarOpponentColor)
+        } else {
+            labelScore.fontColor = UIColor(netHex: Config.AvatarColor)
+        }
     }
     
     func addScore() {

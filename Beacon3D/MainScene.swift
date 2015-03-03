@@ -81,8 +81,8 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
         title.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         title.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         
-        let titleBorder = SKShapeNode(rectOfSize: Config.TitleSize, cornerRadius: 0.5)
-        titleBorder.lineWidth = 10
+        let titleBorder = SKShapeNode(rectOfSize: Config.TitleSize, cornerRadius: 0)
+        titleBorder.lineWidth = 12
         titleBorder.addChild(title)
         titleBorder.position = Config.TitlePosition
         
