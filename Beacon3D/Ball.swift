@@ -15,16 +15,18 @@ enum Ball {
         ball.fillColor = UIColor(netHex: Config.BallColor)
         ball.strokeColor = UIColor(netHex: Config.BallColor)
         ball.position = position
-        ball.physicsBody = SKPhysicsBody(circleOfRadius: circleOfRadius)
-        ball.physicsBody!.applyImpulse(CGVectorMake(0, 0))
-        ball.physicsBody!.categoryBitMask = Config.BallCategory
-        ball.physicsBody!.contactTestBitMask = Config.BorderCategory
         ball.name = Config.BallCategoryName
+        ball.physicsBody = SKPhysicsBody(circleOfRadius: circleOfRadius) 
         ball.physicsBody!.allowsRotation = false
         ball.physicsBody!.friction = 0
         ball.physicsBody!.restitution = 1
         ball.physicsBody!.linearDamping = 0
         ball.physicsBody!.angularDamping = 0
+        
+        ball.physicsBody!.categoryBitMask = Config.BallCategory
+        ball.physicsBody!.contactTestBitMask = Config.BorderCategory
+        
+        ball.physicsBody!.velocity = CGVectorMake(100, 100)
         return ball
     }
     

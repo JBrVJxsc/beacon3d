@@ -70,6 +70,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func initSensors() {
         
+        return
+        
         if  motionManager.accelerometerAvailable {
             let speed = 18.0
             motionManager.accelerometerUpdateInterval = 1.0 / 30.0
@@ -168,9 +170,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func didBeginContact(contact: SKPhysicsContact) {
         
-        if !isGaming {
-            return
-        }
+//        if !isGaming {
+//            return
+//        }
         
         var firstBody: SKPhysicsBody
         var secondBody: SKPhysicsBody
@@ -288,6 +290,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func didPress(sender: Button) {
+        makeBall()
+        
+        return
+        
         if isHolder && !isGaming {
             return
         }
@@ -368,9 +374,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         scoreBoardOpponent.runAction(SKAction.group([fadeOut, scaleToZero]))
         
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
-        physicsBody.friction = 2000
         physicsBody.categoryBitMask = Config.BorderCategory
-        
         self.physicsBody = physicsBody
         
         physicsWorld.gravity = CGVectorMake(0, 0)
@@ -378,13 +382,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         
         button.buttonPressDelegate = self
         setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, scoreBoardBox])
-        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, ball, button])
+//        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, ball, button])
+        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, button])
     }
     
     func makeBall() {
-        let ball = Ball.getBall(Config.BallRadius, position: CGPoint(x: Config.BallPositionMinX, y: Config.BallPositionMinY))
+        let ball = Ball.getBall(Config.BallRadius, position: Config.CenterCirclePosition)
         ball.fillColor =  UIColor(netHex: Config.ButtonColor)
         addChild(ball)
+        
+        return
         
         let duration = 1.0
         let moveAction = SKAction.moveTo(CGPoint(x: Config.BallPositionMaxX, y: Config.BallPositionMaxY), duration: duration)
