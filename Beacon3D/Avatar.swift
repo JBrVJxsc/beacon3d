@@ -18,16 +18,16 @@ enum Avatar {
             avatar.fillColor = UIColor(netHex: Config.AvatarColor)
         }
         avatar.position = position
-        avatar.physicsBody = SKPhysicsBody(circleOfRadius: circleOfRadius)
-        avatar.physicsBody!.applyImpulse(CGVectorMake(0, 0))
-        avatar.physicsBody!.categoryBitMask = Config.AvatarCategory
-        avatar.physicsBody!.contactTestBitMask = Config.AvatarCategory
+//        avatar.physicsBody = SKPhysicsBody(circleOfRadius: circleOfRadius)
+//        avatar.physicsBody!.applyImpulse(CGVectorMake(0, 0))
+//        avatar.physicsBody!.categoryBitMask = Config.AvatarCategory
+//        avatar.physicsBody!.contactTestBitMask = Config.AvatarCategory
         avatar.name = Config.AvatarCategoryName
-        avatar.physicsBody!.allowsRotation = false
-        avatar.physicsBody!.friction = 0
-        avatar.physicsBody!.restitution = 1
-        avatar.physicsBody!.linearDamping = 0
-        avatar.physicsBody!.angularDamping = 0
+//        avatar.physicsBody!.allowsRotation = false
+//        avatar.physicsBody!.friction = 0
+//        avatar.physicsBody!.restitution = 1
+//        avatar.physicsBody!.linearDamping = 0
+//        avatar.physicsBody!.angularDamping = 0
         
         let label = SKLabelNode(text: "^")
         label.fontName = "HelveticaNeue"

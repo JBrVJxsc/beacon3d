@@ -18,8 +18,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
-    let scoreBoardPlayer: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize, cornerRadius: 0.4)
-//    let scoreBoardOpponent: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize, cornerRadius: 0.4)
+    let scoreBoardPlayer: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
     let scoreBoardOpponent: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
     var scoreBoardBox: SKSpriteNode!
     
@@ -57,6 +56,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         initLabels()
         initAvatars()
         initHintTimer()
+        
+        startGame()
     }
     
     func initMPC() {
@@ -370,7 +371,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, scoreBoardBox, ball, button])
     }
     
-    func makeBall () {
+    func makeBall() {
         let ball = Ball.getBall(Config.BallRadius, position: CGPoint(x: Config.BallPositionMinX, y: Config.BallPositionMinY))
         ball.fillColor =  UIColor(netHex: Config.ButtonColor)
         addChild(ball)

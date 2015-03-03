@@ -19,7 +19,7 @@ class ScoreBoard: SKShapeNode {
         
         fillColor = UIColor(netHex: Config.GameBoardColor)
         strokeColor = UIColor(netHex: Config.BorderColor)
-        lineWidth = Config.BorderWidth
+        lineWidth = Config.ScoreBoardBorderWidth
     }
     
     required init?(coder aDecoder: NSCoder) {

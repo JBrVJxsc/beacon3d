@@ -71,10 +71,11 @@ struct Config {
     static var ScoreBoardBoxHeight: CGFloat = (-ButtonPositionInGaming.y - ButtonRadius * ButtonScaleRatioInGaming + ScoreBoardBoxPosition.y) * 0.8
     static var ScoreBoardBoxSize: CGSize = CGSize(width: ScoreBoardBoxWidth, height: ScoreBoardBoxHeight)
     
+    static var ScoreBoardMarge: CGFloat = BorderWidth / 1.4
     static var ScoreBoardSize: CGSize = CGSize(width: ScoreBoardBoxWidth / 2.5, height: ScoreBoardBoxHeight / 1.3)
     static var ScoreBoardBorderWidth: CGFloat = BorderWidth
-    static var ScoreBoardPlayerStartPosition: CGPoint = CGPoint(x: 0, y: 0)
-    static var ScoreBoardOpponentStartPosition: CGPoint = CGPoint(x: 150, y: 0)
-    static var ScoreBoardPlayerTargetPosition: CGPoint = CGPoint(x: 0, y: -Config.ScoreBoardBoxHeight / 2)
-    static var ScoreBoardOpponentTargetPosition: CGPoint = CGPoint(x: 150, y: -Config.ScoreBoardBoxHeight / 2)
+    static var ScoreBoardPlayerStartPosition: CGPoint = CGPoint(x: (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 + ScoreBoardMarge, y: 0)
+    static var ScoreBoardOpponentStartPosition: CGPoint = CGPoint(x: ScoreBoardBoxWidth - (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 - ScoreBoardMarge, y: 0)
+    static var ScoreBoardPlayerTargetPosition: CGPoint = CGPoint(x: (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 + ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 2)
+    static var ScoreBoardOpponentTargetPosition: CGPoint = CGPoint(x: ScoreBoardBoxWidth - (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 - ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 2)
 }
