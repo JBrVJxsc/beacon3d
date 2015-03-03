@@ -18,8 +18,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
-    let scoreBoardPlayer: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
-    let scoreBoardOpponent: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
+    let scoreBoardPlayer = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
+    let scoreBoardOpponent = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
     var scoreBoardBox: SKSpriteNode!
     
     let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
@@ -56,8 +56,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         initLabels()
         initAvatars()
         initHintTimer()
-        
-        startGame()
     }
     
     func initMPC() {
@@ -170,6 +168,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func didBeginContact(contact: SKPhysicsContact) {
         
+        if !isGaming {
+            return
+        }
+        
         var firstBody: SKPhysicsBody
         var secondBody: SKPhysicsBody
         
@@ -182,6 +184,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
         
         if firstBody.categoryBitMask == Config.BorderCategory && secondBody.categoryBitMask == Config.BallCategory {
+            scoreBoardPlayer.addScore()
+            scoreBoardOpponent.addScore()
+        } else if firstBody.categoryBitMask == Config.AvatarCategory && secondBody.categoryBitMask == Config.BallCategory {
+            scoreBoardPlayer.addScore()
+            scoreBoardOpponent.addScore()
+        } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.AvatarCategory {
+            scoreBoardPlayer.addScore()
+            scoreBoardOpponent.addScore()
         }
     }
     
@@ -233,22 +243,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         small.timingMode = .EaseOut
         let move = SKAction.moveTo(Config.ButtonPositionInGaming, duration: 0.8)
         move.timingMode = .EaseOut
-        button.runAction(SKAction.group([small, move]), completion: { () -> Void in
-//            self.scoreBoardBox.addChild(self.scoreBoard)
-//            let fadeIn = SKAction.fadeInWithDuration(0.8)
-//            self.scoreBoardPlayer.hidden = false
-//            self.scoreBoardPlayer.runAction(fadeIn)
-        })
+        button.runAction(SKAction.group([small, move]))
         
-//        self.addChild(self.scoreBoard)
-//        scoreBoard.position = Config.ScoreBoardPosition
-        
-        let moveScoreBoardPlayer = SKAction.moveTo(Config.ScoreBoardPlayerTargetPosition, duration: 0.8)
-        let moveScoreBoardOpponent = SKAction.moveTo(Config.ScoreBoardOpponentTargetPosition, duration: 0.8)
-        scoreBoardPlayer.hidden = false
-        scoreBoardOpponent.hidden = false
-        scoreBoardPlayer.runAction(SKAction.group([fadeIn, moveScoreBoardPlayer]))
-        scoreBoardOpponent.runAction(SKAction.group([fadeIn, moveScoreBoardOpponent]))
+        scoreBoardPlayer.show(0.3)
+        scoreBoardOpponent.show(0.5)
         
         avatar.hidden = false
         avatarOpponent.hidden = false
@@ -345,17 +343,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let bottomBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
         bottomBorder.position = CGPoint(x: Config.BorderWidth, y: -Config.ScreenSize.width + Config.BorderWidth)
         
+        let centerLine = SKSpriteNode(color: UIColor(netHex: Config.CenterLineColor), size: Config.CenterLineSize)
+        centerLine.position = Config.CenterLinePosition
+        
+        let centerCircle = SKShapeNode(circleOfRadius: Config.CenterCircleRadius)
+        centerCircle.strokeColor = UIColor(netHex: Config.CenterCircleColor)
+        centerCircle.lineWidth = Config.CenterCircleLineWidth
+        centerCircle.position = Config.CenterCirclePosition
+
+        
         scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardBoxSize)
         scoreBoardBox.position = Config.ScoreBoardBoxPosition
         scoreBoardBox.addChild(scoreBoardPlayer)
         scoreBoardBox.addChild(scoreBoardOpponent)
         scoreBoardPlayer.hidden = true
-        scoreBoardPlayer.position = Config.ScoreBoardPlayerStartPosition
+        scoreBoardPlayer.position = Config.ScoreBoardPlayerPosition
+        scoreBoardPlayer.setAvatar(false)
         scoreBoardOpponent.hidden = true
-        scoreBoardOpponent.position = Config.ScoreBoardOpponentStartPosition
+        scoreBoardOpponent.position = Config.ScoreBoardOpponentPosition
+        scoreBoardOpponent.setAvatar(true)
         let fadeOut = SKAction.fadeOutWithDuration(0.01)
-        scoreBoardPlayer.runAction(fadeOut)
-        scoreBoardOpponent.runAction(fadeOut)
+        let scaleToZero = SKAction.scaleTo(0, duration: 0.01)
+        scoreBoardPlayer.runAction(SKAction.group([fadeOut, scaleToZero]))
+        scoreBoardOpponent.runAction(SKAction.group([fadeOut, scaleToZero]))
         
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
         physicsBody.friction = 2000
@@ -367,8 +377,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         physicsWorld.contactDelegate = self
         
         button.buttonPressDelegate = self
-        setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, scoreBoardBox])
-        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, scoreBoardBox, ball, button])
+        setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, scoreBoardBox])
+        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, ball, button])
     }
     
     func makeBall() {
