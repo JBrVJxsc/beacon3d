@@ -77,11 +77,17 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
         
         let title = SKLabelNode(text: "Beacon 3D")
         title.fontName = "HelveticaNeue-Bold"
-        title.position = CGPoint(x: Config.ScreenWidth / 2, y: -Config.ScreenHeight / 6.5)
         title.fontSize = title.fontSize * 1.5
+        title.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
+        title.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
+        
+        let titleBorder = SKShapeNode(rectOfSize: Config.TitleSize, cornerRadius: 0.5)
+        titleBorder.lineWidth = 10
+        titleBorder.addChild(title)
+        titleBorder.position = Config.TitlePosition
         
         setAnorPoint([background])
-        addChildren([background, title, buttonPlay, buttonConfigure, buttonRanking])
+        addChildren([background, titleBorder, buttonPlay, buttonConfigure, buttonRanking])
     }
     
     func showLocationSetup() {

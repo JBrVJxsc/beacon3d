@@ -16,8 +16,8 @@ class ScoreBoard: SKShapeNode {
         
         fillColor = UIColor(netHex: Config.ButtonColor)
         strokeColor = UIColor(netHex: Config.ButtonColor)
-        position = Config.ScoreBoardPosition
-        let border = SKShapeNode(rect: Config.ScoreBoardRect)
+
+        let border = SKShapeNode(rectOfSize: Config.ScoreBoardSize)
         border.strokeColor = UIColor(netHex: Config.ButtonBorderColor)
         border.lineWidth = Config.ScoreBoardBorderWidth
         addChild(border)

@@ -10,9 +10,14 @@ import SpriteKit
 
 struct Config {
     
+    static var TransparentColor: Int = 0x00FFFFFF
+    
     static var ScreenSize = UIScreen.mainScreen().bounds.size
     static var ScreenWidth: CGFloat = ScreenSize.width
     static var ScreenHeight: CGFloat = ScreenSize.height
+    
+    static var TitleSize = CGSize(width: ScreenWidth * 0.85, height: ScreenHeight * 0.13)
+    static var TitlePosition = CGPoint(x: Config.ScreenWidth / 2, y: -Config.ScreenHeight / 8.7)
     
     static var AvatarRadius: CGFloat = 1.5 * BallRadius
     static var AvatarColor: Int = ButtonBorderColor
@@ -44,6 +49,7 @@ struct Config {
     static var ButtonBorderWidth: CGFloat = ButtonRadius * 0.15
     static var ButtonBorderColor: Int = 0xE3E536
     static var ButtonPositionInGaming = CGPoint(x: ButtonPosition.x, y: -ScreenHeight * 0.9)
+    static var ButtonScaleRatioInGaming: CGFloat = 0.35
     
     static var BorderColor: Int = 0x3896BA
     static var BorderCategory: UInt32 = 0x1 << 0
@@ -60,9 +66,11 @@ struct Config {
     static var GameBoardSize: CGSize = CGSize(width: GameBoardWidth, height: GameBoardHeight)
     static var GameBoardRect: CGRect = CGRect(x: GameBoardPosition.x, y: GameBoardPosition.y - GameBoardHeight, width: GameBoardWidth, height: GameBoardHeight)
     
-    static var ScoreBoardPosition: CGPoint = CGPoint(x: 0, y: GameBoardPosition.y - GameBoardHeight)
+//    static var ScoreBoardPosition: CGPoint = CGPoint(x: 150, y: GameBoardPosition.y - GameBoardHeight - BorderWidth)
+    static var ScoreBoardPosition: CGPoint = CGPoint(x: 0, y: -ScreenWidth)
     static var ScoreBoardWidth: CGFloat = ScreenWidth
-    static var ScoreBoardHeight: CGFloat = 50
-    static var ScoreBoardRect: CGRect = CGRect(x: ScoreBoardPosition.x, y: ScoreBoardPosition.y - ScoreBoardHeight, width: ScoreBoardWidth, height: ScoreBoardHeight)
+    static var ScoreBoardHeight: CGFloat = (-ButtonPositionInGaming.y - ButtonRadius * ButtonScaleRatioInGaming + ScoreBoardPosition.y) * 0.8
+//    static var ScoreBoardRect: CGRect = CGRect(x: ScoreBoardPosition.x, y: ScoreBoardPosition.y - ScoreBoardHeight, width: ScoreBoardWidth, height: ScoreBoardHeight)
+    static var ScoreBoardSize: CGSize = CGSize(width: ScoreBoardWidth, height: ScoreBoardHeight)
     static var ScoreBoardBorderWidth: CGFloat = BorderWidth
 }

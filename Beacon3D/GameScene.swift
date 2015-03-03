@@ -18,7 +18,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
-    let scoreBoard = ScoreBoard(rect: Config.ScoreBoardRect)
+    let scoreBoard: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize, cornerRadius: 0.4)
+//    let scoreBoard = ScoreBoard()
+    var scoreBoardBox: SKSpriteNode!
+    
     let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
     let avatarOpponent = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarOpponentPosition, isOpponent: true)
     
@@ -224,14 +227,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
         })
 
-        let small = SKAction.scaleTo(0.35, duration: 0.8)
+        let small = SKAction.scaleTo(Config.ButtonScaleRatioInGaming, duration: 0.8)
         small.timingMode = .EaseOut
         let move = SKAction.moveTo(Config.ButtonPositionInGaming, duration: 0.8)
         move.timingMode = .EaseOut
-//        button.runAction(SKAction.group([small, move]))
         button.runAction(SKAction.group([small, move]), completion: { () -> Void in
-            self.addChild(self.scoreBoard)
+//            self.scoreBoardBox.addChild(self.scoreBoard)
+            let fadeIn = SKAction.fadeInWithDuration(0.8)
+            self.scoreBoard.hidden = false
+            self.scoreBoard.runAction(fadeIn)
         })
+        
+//        self.addChild(self.scoreBoard)
+//        scoreBoard.position = Config.ScoreBoardPosition
         
         avatar.hidden = false
         avatarOpponent.hidden = false
@@ -328,6 +336,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let bottomBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
         bottomBorder.position = CGPoint(x: Config.BorderWidth, y: -Config.ScreenSize.width + Config.BorderWidth)
         
+        scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardSize)
+        scoreBoardBox.position = Config.ScoreBoardPosition
+        scoreBoardBox.addChild(scoreBoard)
+        scoreBoard.hidden = true
+        scoreBoard.position = CGPoint(x: Config.ScreenWidth / 2, y: -Config.ScoreBoardHeight / 2)
+        let fadeOut = SKAction.fadeOutWithDuration(0.01)
+        scoreBoard.runAction(fadeOut)
+        
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
         physicsBody.friction = 2000
         physicsBody.categoryBitMask = Config.BorderCategory
@@ -338,8 +354,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         physicsWorld.contactDelegate = self
         
         button.buttonPressDelegate = self
-        setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder])
-        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, ball, button])
+        setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, scoreBoardBox])
+        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, scoreBoardBox, ball, button])
     }
     
     func makeBall () {
