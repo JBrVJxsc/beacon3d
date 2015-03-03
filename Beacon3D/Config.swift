@@ -66,11 +66,15 @@ struct Config {
     static var GameBoardSize: CGSize = CGSize(width: GameBoardWidth, height: GameBoardHeight)
     static var GameBoardRect: CGRect = CGRect(x: GameBoardPosition.x, y: GameBoardPosition.y - GameBoardHeight, width: GameBoardWidth, height: GameBoardHeight)
     
-//    static var ScoreBoardPosition: CGPoint = CGPoint(x: 150, y: GameBoardPosition.y - GameBoardHeight - BorderWidth)
-    static var ScoreBoardPosition: CGPoint = CGPoint(x: 0, y: -ScreenWidth)
-    static var ScoreBoardWidth: CGFloat = ScreenWidth
-    static var ScoreBoardHeight: CGFloat = (-ButtonPositionInGaming.y - ButtonRadius * ButtonScaleRatioInGaming + ScoreBoardPosition.y) * 0.8
-//    static var ScoreBoardRect: CGRect = CGRect(x: ScoreBoardPosition.x, y: ScoreBoardPosition.y - ScoreBoardHeight, width: ScoreBoardWidth, height: ScoreBoardHeight)
-    static var ScoreBoardSize: CGSize = CGSize(width: ScoreBoardWidth, height: ScoreBoardHeight)
+    static var ScoreBoardBoxPosition: CGPoint = CGPoint(x: 0, y: -ScreenWidth)
+    static var ScoreBoardBoxWidth: CGFloat = ScreenWidth
+    static var ScoreBoardBoxHeight: CGFloat = (-ButtonPositionInGaming.y - ButtonRadius * ButtonScaleRatioInGaming + ScoreBoardBoxPosition.y) * 0.8
+    static var ScoreBoardBoxSize: CGSize = CGSize(width: ScoreBoardBoxWidth, height: ScoreBoardBoxHeight)
+    
+    static var ScoreBoardSize: CGSize = CGSize(width: ScoreBoardBoxWidth / 2.5, height: ScoreBoardBoxHeight / 1.3)
     static var ScoreBoardBorderWidth: CGFloat = BorderWidth
+    static var ScoreBoardPlayerStartPosition: CGPoint = CGPoint(x: 0, y: 0)
+    static var ScoreBoardOpponentStartPosition: CGPoint = CGPoint(x: 150, y: 0)
+    static var ScoreBoardPlayerTargetPosition: CGPoint = CGPoint(x: 0, y: -Config.ScoreBoardBoxHeight / 2)
+    static var ScoreBoardOpponentTargetPosition: CGPoint = CGPoint(x: 150, y: -Config.ScoreBoardBoxHeight / 2)
 }

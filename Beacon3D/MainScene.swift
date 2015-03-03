@@ -118,11 +118,6 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
             let defaults = NSUserDefaults.standardUserDefaults()
             let location = defaults.dictionaryForKey("location")
             
-//            if location != nil {
-//                println(location)
-//            } else {
-//                showLocationSetup()
-//            }
             showLocationSetup()
         }
     }

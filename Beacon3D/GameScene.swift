@@ -18,8 +18,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
-    let scoreBoard: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize, cornerRadius: 0.4)
-//    let scoreBoard = ScoreBoard()
+    let scoreBoardPlayer: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize, cornerRadius: 0.4)
+//    let scoreBoardOpponent: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize, cornerRadius: 0.4)
+    let scoreBoardOpponent: SKShapeNode = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
     var scoreBoardBox: SKSpriteNode!
     
     let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
@@ -233,13 +234,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         move.timingMode = .EaseOut
         button.runAction(SKAction.group([small, move]), completion: { () -> Void in
 //            self.scoreBoardBox.addChild(self.scoreBoard)
-            let fadeIn = SKAction.fadeInWithDuration(0.8)
-            self.scoreBoard.hidden = false
-            self.scoreBoard.runAction(fadeIn)
+//            let fadeIn = SKAction.fadeInWithDuration(0.8)
+//            self.scoreBoardPlayer.hidden = false
+//            self.scoreBoardPlayer.runAction(fadeIn)
         })
         
 //        self.addChild(self.scoreBoard)
 //        scoreBoard.position = Config.ScoreBoardPosition
+        
+        let moveScoreBoardPlayer = SKAction.moveTo(Config.ScoreBoardPlayerTargetPosition, duration: 0.8)
+        let moveScoreBoardOpponent = SKAction.moveTo(Config.ScoreBoardOpponentTargetPosition, duration: 0.8)
+        scoreBoardPlayer.hidden = false
+        scoreBoardOpponent.hidden = false
+        scoreBoardPlayer.runAction(SKAction.group([fadeIn, moveScoreBoardPlayer]))
+        scoreBoardOpponent.runAction(SKAction.group([fadeIn, moveScoreBoardOpponent]))
         
         avatar.hidden = false
         avatarOpponent.hidden = false
@@ -336,13 +344,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let bottomBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
         bottomBorder.position = CGPoint(x: Config.BorderWidth, y: -Config.ScreenSize.width + Config.BorderWidth)
         
-        scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardSize)
-        scoreBoardBox.position = Config.ScoreBoardPosition
-        scoreBoardBox.addChild(scoreBoard)
-        scoreBoard.hidden = true
-        scoreBoard.position = CGPoint(x: Config.ScreenWidth / 2, y: -Config.ScoreBoardHeight / 2)
+        scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardBoxSize)
+        scoreBoardBox.position = Config.ScoreBoardBoxPosition
+        scoreBoardBox.addChild(scoreBoardPlayer)
+        scoreBoardBox.addChild(scoreBoardOpponent)
+        scoreBoardPlayer.hidden = true
+        scoreBoardPlayer.position = Config.ScoreBoardPlayerStartPosition
+        scoreBoardOpponent.hidden = true
+        scoreBoardOpponent.position = Config.ScoreBoardOpponentStartPosition
         let fadeOut = SKAction.fadeOutWithDuration(0.01)
-        scoreBoard.runAction(fadeOut)
+        scoreBoardPlayer.runAction(fadeOut)
+        scoreBoardOpponent.runAction(fadeOut)
         
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
         physicsBody.friction = 2000
