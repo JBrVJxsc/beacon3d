@@ -99,7 +99,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
 //        }
         
         if motionManager.deviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 1 / 15
+            motionManager.deviceMotionUpdateInterval = 1 / 4
             motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
             (data: CMDeviceMotion!, error: NSError!) -> Void in
                 
@@ -108,7 +108,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                     return
                 }
                 
-                let rotate = SKAction.rotateToAngle(CGFloat(data.attitude.yaw), duration: 0.01)
+                let rotate = SKAction.rotateToAngle(CGFloat(data.attitude.yaw), duration: self.motionManager.deviceMotionUpdateInterval)
                 self.avatar.runAction(rotate)
                 
                 // 发送角色旋转信息。
@@ -302,7 +302,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let r1: Float? = message.objectForKey("radians")?.floatValue
             let r: CGFloat = CGFloat(r1!)
 
-            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 0.01)
+            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 1 / 4)
             self.avatarOpponent.runAction(rotate)
         }
     }
