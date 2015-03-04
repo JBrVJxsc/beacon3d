@@ -14,7 +14,7 @@ protocol GameSceneExitDelegate {
     func gameSceneDidExit(sender: GameScene)
 }
 
-class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate, ESTIndoorLocationManagerDelegate {
+class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate, ESTIndoorLocationManagerDelegate, MotionEndedDelegate {
     
     let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
     let button = Button(circleOfRadius: Config.ButtonRadius)
@@ -321,6 +321,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let err: () = NSLog(error.localizedDescription)
     }
     
+    var count = 0
+    func didMotionEnded(motion: UIEventSubtype, withEvent event: UIEvent) {
+        if motion == .MotionShake {
+            labelHint.removeAllActions()
+            let fadeIn = SKAction.fadeInWithDuration(0.1)
+            labelHint.runAction(fadeIn)
+            count++
+            labelHint.text = String(count)
+        }
+    }
+    
     func initBackground() {
         
         let background = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScreenSize)
@@ -341,14 +352,20 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let bottomBorder = SKSpriteNode(color: UIColor(netHex: Config.BorderColor), size: CGSizeMake(Config.GameBoardWidth, Config.BorderWidth))
         bottomBorder.position = CGPoint(x: Config.BorderWidth, y: -Config.ScreenSize.width + Config.BorderWidth)
         
+        // 设置中心线。
         let centerLine = SKSpriteNode(color: UIColor(netHex: Config.CenterLineColor), size: Config.CenterLineSize)
         centerLine.position = Config.CenterLinePosition
         
+        // 设置中心圆。
         let centerCircle = SKShapeNode(circleOfRadius: Config.CenterCircleRadius)
         centerCircle.strokeColor = UIColor(netHex: Config.CenterCircleColor)
         centerCircle.lineWidth = Config.CenterCircleLineWidth
         centerCircle.position = Config.CenterCirclePosition
+        
+        // 设置门框。
+        
 
+        // 设置计分板。
         scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardBoxSize)
         scoreBoardBox.position = Config.ScoreBoardBoxPosition
         scoreBoardBox.addChild(scoreBoardPlayer)

@@ -9,11 +9,16 @@
 import UIKit
 import SpriteKit
 
+protocol MotionEndedDelegate {
+    func didMotionEnded(motion: UIEventSubtype, withEvent event: UIEvent)
+}
+
 class GameViewController: UIViewController {
 
 	@IBOutlet weak var gamingView: SKView!
 	@IBOutlet weak var settingView: UIView!
 	
+    var motionEndedDelegate: MotionEndedDelegate!
     var mainScene: MainScene!
     
     override func viewDidLoad() {
@@ -35,5 +40,15 @@ class GameViewController: UIViewController {
 
     override func prefersStatusBarHidden() -> Bool {
         return true
+    }
+    
+    override func canBecomeFirstResponder() -> Bool {
+        return true
+    }
+    
+    override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent) {
+        if motionEndedDelegate != nil {
+            motionEndedDelegate.didMotionEnded(motion, withEvent: event)
+        }
     }
 }

@@ -87,4 +87,15 @@ struct Config {
     static var ScoreBoardBorderWidth: CGFloat = BorderWidth
     static var ScoreBoardPlayerPosition: CGPoint = CGPoint(x: (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 + ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 2.1)
     static var ScoreBoardOpponentPosition: CGPoint = CGPoint(x: ScoreBoardBoxWidth - (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 - ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 2.1)
+    
+    static var DoorColor: Int = BorderColor
+    static var DoorLineWidth: CGFloat = 1
+    static var DoorPlayerPosition: CGPoint = CGPoint(x: 0, y: 0)
+    static var DoorPlayerCategory: UInt32 = 0x1 << 3
+    static var DoorOpponentPosition: CGPoint = CGPoint(x: 0, y: 0)
+    static var DoorOpponentCategory: UInt32 = 0x1 << 4
+    static var DoorWidth: CGFloat = ScreenWidth / 3
+    static var DoorHeight: CGFloat = 5
+    static var DoorPlayerRect: CGRect = CGRect(x: DoorPlayerPosition.x, y: DoorPlayerPosition.y - DoorHeight, width: DoorWidth, height: DoorHeight)
+    static var DoorOpponentRect: CGRect = CGRect(x: DoorOpponentPosition.x, y: DoorOpponentPosition.y - DoorHeight, width: DoorWidth, height: DoorHeight)
 }
