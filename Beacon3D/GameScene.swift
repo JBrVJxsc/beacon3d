@@ -22,7 +22,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     let scoreBoardOpponent = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
     var scoreBoardBox: SKSpriteNode!
     
-    let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
+    let avatarPlayer = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
     let avatarOpponent = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarOpponentPosition, isOpponent: true)
     let avatarOpponentDefaultRotation = Math.degreesToRadians(180)
     
@@ -99,7 +99,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
 //        }
         
         if motionManager.deviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 1 / 4
+            motionManager.deviceMotionUpdateInterval = 1 / 5
             motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
             (data: CMDeviceMotion!, error: NSError!) -> Void in
                 
@@ -109,7 +109,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 }
                 
                 let rotate = SKAction.rotateToAngle(CGFloat(data.attitude.yaw), duration: self.motionManager.deviceMotionUpdateInterval)
-                self.avatar.runAction(rotate)
+                self.avatarPlayer.runAction(rotate)
                 
                 // 发送角色旋转信息。
                 let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": data.attitude.yaw]
@@ -120,73 +120,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
         
         
-    }
-    
-    func initHintTimer() {
-        firstFire = true
-        if timer != nil {
-            timer.invalidate()
-        }
-        timer = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: Selector("hintFire"), userInfo: nil, repeats: true)
-        timer.fire()
-    }
-    
-    func hintFire() {
-        if firstFire {
-            firstFire = false
-            return
-        }
-        animateHint(true)
-        timer.invalidate()
-    }
-    
-    func initAvatars() {
-        let fadeOut = SKAction.fadeOutWithDuration(0.01)
-        let rotate = SKAction.rotateByAngle(avatarOpponentDefaultRotation, duration: 0.01)
-        avatar.runAction(fadeOut)
-        avatarOpponent.runAction(SKAction.group([fadeOut, rotate]))
-        avatar.hidden = true
-        avatarOpponent.hidden = true
-        
-        addChildren([avatar, avatarOpponent])
-    }
-    
-    func initLabels() {
-        labelHint.fontName = "HelveticaNeue-Bold"
-        labelHint.fontSize = labelHint.fontSize * 1.5
-        labelHint.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
-        labelHint.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
-        let hintFadeOut = SKAction.fadeOutWithDuration(0.01)
-        labelHint.runAction(hintFadeOut)
-        
-        button.addChild(labelHint)
-    }
-    
-    func animateHint(b: Bool) {
-        if b {
-            let hintFadeDuration = 0.5
-            let hintFadeIn = SKAction.fadeInWithDuration(hintFadeDuration)
-            let hintFadeOut = SKAction.fadeOutWithDuration(hintFadeDuration)
-            let actionHint = SKAction.sequence([hintFadeIn, hintFadeOut])
-            labelHint.text = hints[hintIndex]
-            labelHint.runAction(actionHint, completion: { () -> Void in
-                self.hintIndex++
-                if self.hintIndex == self.hints.count {
-                    self.hintIndex = 0
-                }
-                self.animateHint(true)
-            })
-        } else {
-            hintIndex = 0
-            self.labelHint.removeAllActions()
-            let hintFadeOut = SKAction.fadeOutWithDuration(0.5)
-            labelHint.runAction(hintFadeOut, completion: { () -> Void in
-                self.labelHint.text = "Wait"
-                let wait = SKAction.waitForDuration(0.2)
-                let fadeIn = SKAction.fadeInWithDuration(0.5)
-                self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
-            })
-        }
     }
     
     func didBeginContact(contact: SKPhysicsContact) {
@@ -201,15 +134,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             secondBody = contact.bodyA
         }
         
-        if firstBody.categoryBitMask == Config.BorderCategory && secondBody.categoryBitMask == Config.BallCategory {
-            scoreBoardPlayer.addScore()
+        if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.BorderCategory {
+
+        } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorPlayerCategory {
             scoreBoardOpponent.addScore()
-        } else if firstBody.categoryBitMask == Config.AvatarCategory && secondBody.categoryBitMask == Config.BallCategory {
+        } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorOpponentCategory {
             scoreBoardPlayer.addScore()
-            scoreBoardOpponent.addScore()
-        } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.AvatarCategory {
-            scoreBoardPlayer.addScore()
-            scoreBoardOpponent.addScore()
         }
     }
     
@@ -249,9 +179,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         scoreBoardOpponent.show(0.5)
         
         // 显示玩家图标。
-        avatar.hidden = false
+        avatarPlayer.hidden = false
         avatarOpponent.hidden = false
-        avatar.runAction(fadeIn)
+        avatarPlayer.runAction(fadeIn)
         avatarOpponent.runAction(fadeIn)
         
         // 如果当前是主机，则将地图发送给对方。
@@ -302,7 +232,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let r1: Float? = message.objectForKey("radians")?.floatValue
             let r: CGFloat = CGFloat(r1!)
 
-            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 1 / 4)
+            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 1 / 5)
             self.avatarOpponent.runAction(rotate)
         }
     }
@@ -313,27 +243,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             position.x,
             position.y,
             position.orientation)
-        
-//        labelHint.text = text
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didFailToUpdatePositionWithError error: NSError!) {
-        let err: () = NSLog(error.localizedDescription)
+//        let err: () = NSLog(error.localizedDescription)
     }
     
-    var count = 0
     func didMotionEnded(motion: UIEventSubtype, withEvent event: UIEvent) {
         if motion == .MotionShake {
-            labelHint.removeAllActions()
-            let fadeIn = SKAction.fadeInWithDuration(0.1)
-            labelHint.runAction(fadeIn)
-            count++
-            labelHint.text = String(count)
+            makeBall()
         }
     }
     
     func initBackground() {
-        
         let background = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScreenSize)
         background.position = Config.BackgroundPosition
         
@@ -363,7 +285,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         centerCircle.position = Config.CenterCirclePosition
         
         // 设置门框。
+        let doorPlayer = SKShapeNode(rectOfSize: Config.DoorSize)
+        doorPlayer.strokeColor = UIColor(netHex: Config.DoorColor)
+        doorPlayer.lineWidth = Config.DoorLineWidth
+        doorPlayer.position = Config.DoorPlayerPosition
+        let doorPlayerPhysicsBody = SKPhysicsBody(rectangleOfSize: Config.DoorSize)
+        doorPlayerPhysicsBody.categoryBitMask = Config.DoorPlayerCategory
+        doorPlayerPhysicsBody.contactTestBitMask = Config.BallCategory
+        doorPlayerPhysicsBody.dynamic = false
+        doorPlayer.physicsBody = doorPlayerPhysicsBody
         
+        let doorOpponent = SKShapeNode(rectOfSize: Config.DoorSize)
+        doorOpponent.strokeColor = UIColor(netHex: Config.DoorColor)
+        doorOpponent.lineWidth = Config.DoorLineWidth
+        doorOpponent.position = Config.DoorOpponentPosition
+        let doorOpponentPhysicsBody = SKPhysicsBody(rectangleOfSize: Config.DoorSize)
+        doorOpponentPhysicsBody.categoryBitMask = Config.DoorOpponentCategory
+        doorOpponentPhysicsBody.contactTestBitMask = Config.BallCategory
+        doorOpponentPhysicsBody.dynamic = false
+        doorOpponent.physicsBody = doorOpponentPhysicsBody
 
         // 设置计分板。
         scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardBoxSize)
@@ -392,22 +332,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         button.buttonPressDelegate = self
         
         setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, scoreBoardBox])
-        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, button])
-    }
-    
-    func initLocationManager() {
-        ESTConfig.setupAppID("app_28n6m2cfaq", andAppToken: "e6a2c5fcc28276a9ab28de9ea5961dd7")
-        locationManager.delegate = self
-    }
-    
-    func initMPC() {
-        appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
-        appDelegate.mpcHandler.setupPeerWithDisplayName(UIDevice.currentDevice().name)
-        appDelegate.mpcHandler.setupSession()
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "peerChangedStateWithNotification:", name: "MPC_DidChangeStateNotification", object: nil)
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleReceivedDataWithNotification:", name: "MPC_DidReceiveDataNotification", object: nil)
+        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, doorPlayer, doorOpponent, scoreBoardBox, button])
     }
     
     func makeBall() {
@@ -421,7 +346,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         scaleToSmall.timingMode = .EaseIn
         let scaleSeq = SKAction.sequence([scaleToBig, scaleToSmall])
         let action = SKAction.repeatActionForever(scaleSeq)
-        ball.runAction(action)
+//        ball.runAction(action)
     }
     
     func showLocationSetup() {
@@ -442,6 +367,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func didPress(sender: Button) {
+        
         if isHolder && !isGaming {
             return
         }
@@ -511,6 +437,87 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
         
         println(state)
+    }
+    
+    func initLocationManager() {
+        ESTConfig.setupAppID("app_28n6m2cfaq", andAppToken: "e6a2c5fcc28276a9ab28de9ea5961dd7")
+        locationManager.delegate = self
+    }
+    
+    func initMPC() {
+        appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
+        appDelegate.mpcHandler.setupPeerWithDisplayName(UIDevice.currentDevice().name)
+        appDelegate.mpcHandler.setupSession()
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "peerChangedStateWithNotification:", name: "MPC_DidChangeStateNotification", object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleReceivedDataWithNotification:", name: "MPC_DidReceiveDataNotification", object: nil)
+    }
+    
+    func initHintTimer() {
+        firstFire = true
+        if timer != nil {
+            timer.invalidate()
+        }
+        timer = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: Selector("hintFire"), userInfo: nil, repeats: true)
+        timer.fire()
+    }
+    
+    func hintFire() {
+        if firstFire {
+            firstFire = false
+            return
+        }
+        animateHint(true)
+        timer.invalidate()
+    }
+    
+    func initAvatars() {
+        let fadeOut = SKAction.fadeOutWithDuration(0.01)
+        let rotate = SKAction.rotateByAngle(avatarOpponentDefaultRotation, duration: 0.01)
+        avatarPlayer.runAction(fadeOut)
+        avatarOpponent.runAction(SKAction.group([fadeOut, rotate]))
+        avatarPlayer.hidden = true
+        avatarOpponent.hidden = true
+        
+        addChildren([avatarPlayer, avatarOpponent])
+    }
+    
+    func initLabels() {
+        labelHint.fontName = "HelveticaNeue-Bold"
+        labelHint.fontSize = labelHint.fontSize * 1.5
+        labelHint.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
+        labelHint.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
+        let hintFadeOut = SKAction.fadeOutWithDuration(0.01)
+        labelHint.runAction(hintFadeOut)
+        button.addChild(labelHint)
+    }
+    
+    func animateHint(b: Bool) {
+        if b {
+            let hintFadeDuration = 0.5
+            let hintFadeIn = SKAction.fadeInWithDuration(hintFadeDuration)
+            let hintFadeOut = SKAction.fadeOutWithDuration(hintFadeDuration)
+            let actionHint = SKAction.sequence([hintFadeIn, hintFadeOut])
+            labelHint.text = hints[hintIndex]
+            labelHint.runAction(actionHint, completion: { () -> Void in
+                self.hintIndex++
+                if self.hintIndex == self.hints.count {
+                    self.hintIndex = 0
+                }
+                self.animateHint(true)
+            })
+        } else {
+            hintIndex = 0
+            self.labelHint.removeAllActions()
+            let hintFadeOut = SKAction.fadeOutWithDuration(0.5)
+            labelHint.runAction(hintFadeOut, completion: { () -> Void in
+                self.labelHint.text = "Wait"
+                let wait = SKAction.waitForDuration(0.2)
+                let fadeIn = SKAction.fadeInWithDuration(0.5)
+                self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
+            })
+        }
     }
     
     override func didMoveToView(view: SKView) {

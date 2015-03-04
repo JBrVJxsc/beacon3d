@@ -22,10 +22,7 @@ enum Ball {
         ball.physicsBody!.restitution = 1
         ball.physicsBody!.linearDamping = 0
         ball.physicsBody!.angularDamping = 0
-        
         ball.physicsBody!.categoryBitMask = Config.BallCategory
-        ball.physicsBody!.contactTestBitMask = Config.BorderCategory
-        
         ball.physicsBody!.velocity = CGVectorMake(100, 100)
         return ball
     }

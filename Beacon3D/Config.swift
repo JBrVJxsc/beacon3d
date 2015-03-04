@@ -34,7 +34,7 @@ struct Config {
     static var BallRadius: CGFloat = 10
     static var BallColor: Int = 0x61C3DB
     static var BallCategoryName = "ball"
-    static var BallCategory: UInt32 = 0x1 << 1
+    static var BallCategory: UInt32 = 0x1 << 0
     static var BallPosition: CGPoint = CGPoint(x: BallPositionMinX, y: BallPositionMaxY)
     static var BallPositionMinX: CGFloat = BorderWidth + BallRadius
     static var BallPositionMaxX: CGFloat = ScreenWidth - BorderWidth - BallRadius
@@ -52,7 +52,7 @@ struct Config {
     static var ButtonScaleRatioInGaming: CGFloat = 0.35
     
     static var BorderColor: Int = 0x3896BA
-    static var BorderCategory: UInt32 = 0x1 << 0
+    static var BorderCategory: UInt32 = 0x1 << 1
     static var BorderWidth: CGFloat = 15
     
     static var BackgroungColor: Int = 0x61C3DB
@@ -90,12 +90,11 @@ struct Config {
     
     static var DoorColor: Int = BorderColor
     static var DoorLineWidth: CGFloat = 1
-    static var DoorPlayerPosition: CGPoint = CGPoint(x: 0, y: 0)
+    static var DoorPlayerPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: -BorderWidth - GameBoardHeight + DoorHeight / 2 - (DoorLineWidth + 1) / 2)
     static var DoorPlayerCategory: UInt32 = 0x1 << 3
-    static var DoorOpponentPosition: CGPoint = CGPoint(x: 0, y: 0)
+    static var DoorOpponentPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: -BorderWidth - DoorHeight / 2 + (DoorLineWidth + 1) / 2)
     static var DoorOpponentCategory: UInt32 = 0x1 << 4
     static var DoorWidth: CGFloat = ScreenWidth / 3
-    static var DoorHeight: CGFloat = 5
-    static var DoorPlayerRect: CGRect = CGRect(x: DoorPlayerPosition.x, y: DoorPlayerPosition.y - DoorHeight, width: DoorWidth, height: DoorHeight)
-    static var DoorOpponentRect: CGRect = CGRect(x: DoorOpponentPosition.x, y: DoorOpponentPosition.y - DoorHeight, width: DoorWidth, height: DoorHeight)
+    static var DoorHeight: CGFloat = BorderWidth / 2
+    static var DoorSize: CGSize = CGSize(width: DoorWidth, height: DoorHeight)
 }
