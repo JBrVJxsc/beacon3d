@@ -18,4 +18,29 @@ enum Math {
         let result = radians * 180.0 / M_PI
         return CGFloat(result)
     }
+    
+    static func positionTurnover(point: CGPoint) -> CGPoint {
+        let xAxis = Config.ScreenWidth / 2
+        let yAxis = -Config.BorderWidth - Config.GameBoardHeight / 2
+        var x = point.x
+        var y = point.y
+        
+        if x < xAxis {
+            x = xAxis + (xAxis - x)
+        } else if x > xAxis {
+            x = xAxis - (x - xAxis)
+        }
+        
+        if y < yAxis {
+            y = yAxis + (yAxis - y)
+        } else if y > yAxis {
+            y = yAxis - (y - yAxis)
+        }
+        
+        return CGPoint(x: x, y: y)
+    }
+    
+    static func vectorTurnover(vector: CGVector) -> CGVector {
+        return CGVectorMake(-vector.dx, -vector.dy)
+    }
 }
