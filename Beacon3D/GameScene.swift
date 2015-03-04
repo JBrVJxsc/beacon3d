@@ -25,6 +25,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
     let avatarOpponent = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarOpponentPosition, isOpponent: true)
     
+    var mainMap: ESTLocation!
     let motionManager: CMMotionManager = CMMotionManager()
     var timer: NSTimer!
     var firstFire: Bool = true
@@ -83,7 +84,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
                 self.ball.runAction(move)
                 
-                let messageDict = ["type": "AMoving", "x": x, "y": y]
+                let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
                 let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
                 
                 self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
@@ -160,7 +161,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             self.labelHint.removeAllActions()
             let hintFadeOut = SKAction.fadeOutWithDuration(0.5)
             labelHint.runAction(hintFadeOut, completion: { () -> Void in
-                self.labelHint.text = "Waiting"
+                self.labelHint.text = "Wait"
                 let wait = SKAction.waitForDuration(0.2)
                 let fadeIn = SKAction.fadeInWithDuration(0.5)
                 self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
@@ -169,11 +170,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func didBeginContact(contact: SKPhysicsContact) {
-        
-//        if !isGaming {
-//            return
-//        }
-        
         var firstBody: SKPhysicsBody
         var secondBody: SKPhysicsBody
         
@@ -197,27 +193,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
     }
     
-    func connectWithPlayer() {
-        if appDelegate.mpcHandler.session != nil {
-            appDelegate.mpcHandler.setupBrowser()
-            appDelegate.mpcHandler.browser.delegate = self            
-            viewController.presentViewController(appDelegate.mpcHandler.browser, animated: true, completion: nil)
-        }
-    }
-    
-    func switchAdvertising() {
-        appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
-        isHolder = appDelegate.mpcHandler.advertising
-    }
-    
-    func exitGameScene() {
-        appDelegate.mpcHandler.advertiseSelf(false)
-        isHolder = appDelegate.mpcHandler.advertising
-        gameSceneExitDelegate.gameSceneDidExit(self)
-    }
-    
     func startGame() {
         isGaming = true
+        
+        // 设置Button。
         button.allowLongPress = false
         let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.8)
         
@@ -230,7 +209,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             button.fillColor = UIColor(netHex: Config.ButtonColor)
             button.strokeColor = UIColor(netHex: Config.ButtonColor)
         }
-        
         labelHint.removeAllActions()
         let fadeOut = SKAction.fadeOutWithDuration(0.5)
         labelHint.runAction(fadeOut, completion: { () -> Void in
@@ -240,34 +218,30 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let fadeIn = SKAction.fadeInWithDuration(0.5)
             self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
         })
-
         let small = SKAction.scaleTo(Config.ButtonScaleRatioInGaming, duration: 0.8)
         small.timingMode = .EaseOut
         let move = SKAction.moveTo(Config.ButtonPositionInGaming, duration: 0.8)
         move.timingMode = .EaseOut
         button.runAction(SKAction.group([small, move]))
         
+        // 显示计分板。
         scoreBoardPlayer.show(0.3)
         scoreBoardOpponent.show(0.5)
         
+        // 显示玩家图标。
         avatar.hidden = false
         avatarOpponent.hidden = false
         avatar.runAction(fadeIn)
         avatarOpponent.runAction(fadeIn)
-    }
-    
-    func peerChangedStateWithNotification(notification: NSNotification) {
-        let userInfo = NSDictionary(dictionary: notification.userInfo!)
-        let state = userInfo.objectForKey("state") as Int
         
-        if state == MCSessionState.Connected.rawValue {
-            if !isHolder {
-                viewController.dismissViewControllerAnimated(true, completion: nil)
-            }
-            startGame()
+        // 如果当前是主机，则将地图发送给对方。
+        if isHolder {
+            let defaults = NSUserDefaults.standardUserDefaults()
+            let map = defaults.dictionaryForKey("location")!
+            mainMap = ESTLocation(fromDictionary: map)
+            let messageData = NSJSONSerialization.dataWithJSONObject(map, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+            self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
         }
-        
-        println(state)
     }
     
     func handleReceivedDataWithNotification(notification: NSNotification) {
@@ -276,8 +250,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         
         let message = NSJSONSerialization.JSONObjectWithData(receivedData, options: NSJSONReadingOptions.AllowFragments, error: nil) as NSDictionary
         
-        if message.objectForKey("type") as? String == "AMoving" {
-            
+        var type = message.objectForKey("type") as? String
+        let mapType = message.objectForKey("creationDate") as? String
+        if mapType != nil {
+            type = Enum.SendMap.rawValue
+        }
+        
+        // 角色移动信息。
+        if type == Enum.MoveAvatar.rawValue {
             let x1: Float? = message.objectForKey("x")?.floatValue
             let y1: Float? = message.objectForKey("y")?.floatValue
 
@@ -287,31 +267,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
             self.ball.runAction(move)
         }
-    }
-    
-    func didPress(sender: Button) {
-        makeBall()
-        
-        return
-        
-        if isHolder && !isGaming {
-            return
-        }
-        if !isGaming {
-            connectWithPlayer()
-        } else {
-            exitGameScene()
-        }
-    }
-    
-    func didLongPress(sender: Button) {
-        switchAdvertising()
-        if !isHolder {
-            let hintFadeOut = SKAction.fadeOutWithDuration(0.4)
-            labelHint.runAction(hintFadeOut)
-            initHintTimer()
-        } else {
-            animateHint(false)
+        // 接收地图信息。
+        else if type == Enum.SendMap.rawValue {
+            mainMap = ESTLocation(fromDictionary: message)
         }
     }
     
@@ -324,7 +282,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didFailToUpdatePositionWithError error: NSError!) {
-        
         let text = "It seems you are outside the location."
         let err = NSLog(error.localizedDescription)
     }
@@ -357,7 +314,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         centerCircle.lineWidth = Config.CenterCircleLineWidth
         centerCircle.position = Config.CenterCirclePosition
 
-        
         scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardBoxSize)
         scoreBoardBox.position = Config.ScoreBoardBoxPosition
         scoreBoardBox.addChild(scoreBoardPlayer)
@@ -373,16 +329,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         scoreBoardPlayer.runAction(SKAction.group([fadeOut, scaleToZero]))
         scoreBoardOpponent.runAction(SKAction.group([fadeOut, scaleToZero]))
         
+        // 设置游戏界面物理属性。
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
         physicsBody.categoryBitMask = Config.BorderCategory
         self.physicsBody = physicsBody
-        
         physicsWorld.gravity = CGVectorMake(0, 0)
         physicsWorld.contactDelegate = self
         
+        // 设置Button点击事件代理。
         button.buttonPressDelegate = self
+        
         setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, scoreBoardBox])
-//        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, ball, button])
         addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, button])
     }
     
@@ -390,18 +347,80 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let ball = Ball.getBall(Config.BallRadius, position: Config.CenterCirclePosition)
         ball.fillColor =  UIColor(netHex: Config.ButtonColor)
         addChild(ball)
-        
-        return
-        
-        let duration = 1.0
-        let moveAction = SKAction.moveTo(CGPoint(x: Config.BallPositionMaxX, y: Config.BallPositionMaxY), duration: duration)
-        moveAction.timingMode = .EaseInEaseOut
-        
-        let scaleToBig = SKAction.scaleBy(3.0, duration: duration / 2)
-        let scaleToSmall = SKAction.scaleBy(0.25, duration: duration / 2)
+        let duration = 6.0
+        let scaleToBig = SKAction.scaleTo(3.0, duration: duration / 2)
+        scaleToBig.timingMode = .EaseOut
+        let scaleToSmall = SKAction.scaleTo(1.0, duration: duration / 2)
+        scaleToSmall.timingMode = .EaseIn
         let scaleSeq = SKAction.sequence([scaleToBig, scaleToSmall])
-        scaleSeq.timingMode = .EaseInEaseOut
-        ball.runAction(SKAction.group([moveAction, scaleSeq]))
+        let action = SKAction.repeatActionForever(scaleSeq)
+        ball.runAction(action)
+    }
+    
+    func showLocationSetup() {
+        let locationSetupVC = ESTIndoorLocationManager.locationSetupControllerWithCompletion { (location, error) in
+            
+            self.viewController.dismissViewControllerAnimated(true, completion: nil)
+            if location == nil {
+                
+            } else {
+                let defaults = NSUserDefaults.standardUserDefaults()
+                defaults.setObject(location.toDictionary(), forKey: "location")
+            }
+        }
+        
+        viewController.presentViewController(UINavigationController(rootViewController: locationSetupVC),
+            animated: true,
+            completion: nil)
+    }
+    
+    func didPress(sender: Button) {
+        if isHolder && !isGaming {
+            return
+        }
+        if !isGaming {
+            connectWithPlayer()
+        } else {
+            exitGameScene()
+        }
+    }
+    
+    func didLongPress(sender: Button) {
+        // 如果当前没有地图，则弹出地图设置界面。
+        let defaults = NSUserDefaults.standardUserDefaults()
+        let location = defaults.dictionaryForKey("location")
+        if location == nil {
+            showLocationSetup()
+        }
+        
+        // 切换广播状态。
+        switchAdvertising()
+        if !isHolder {
+            let hintFadeOut = SKAction.fadeOutWithDuration(0.4)
+            labelHint.runAction(hintFadeOut)
+            initHintTimer()
+        } else {
+            animateHint(false)
+        }
+    }
+    
+    func connectWithPlayer() {
+        if appDelegate.mpcHandler.session != nil {
+            appDelegate.mpcHandler.setupBrowser()
+            appDelegate.mpcHandler.browser.delegate = self
+            viewController.presentViewController(appDelegate.mpcHandler.browser, animated: true, completion: nil)
+        }
+    }
+    
+    func switchAdvertising() {
+        appDelegate.mpcHandler.advertiseSelf(!appDelegate.mpcHandler.advertising)
+        isHolder = appDelegate.mpcHandler.advertising
+    }
+    
+    func exitGameScene() {
+        appDelegate.mpcHandler.advertiseSelf(false)
+        isHolder = appDelegate.mpcHandler.advertising
+        gameSceneExitDelegate.gameSceneDidExit(self)
     }
     
     func browserViewControllerDidFinish(browserViewController: MCBrowserViewController!) {
@@ -410,6 +429,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func browserViewControllerWasCancelled(browserViewController: MCBrowserViewController!) {
         appDelegate.mpcHandler.browser.dismissViewControllerAnimated(true, completion: nil)
+    }
+    
+    func peerChangedStateWithNotification(notification: NSNotification) {
+        let userInfo = NSDictionary(dictionary: notification.userInfo!)
+        let state = userInfo.objectForKey("state") as Int
+        
+        // 如果连接成功。
+        if state == MCSessionState.Connected.rawValue {
+            if !isHolder {
+                viewController.dismissViewControllerAnimated(true, completion: nil)
+            }
+            startGame()
+        }
+        
+        println(state)
     }
     
     override func didMoveToView(view: SKView) {

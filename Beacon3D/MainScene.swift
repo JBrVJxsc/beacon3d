@@ -116,7 +116,8 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
             skView.presentScene(gameScene, transition: SKTransition.fadeWithDuration(1.5))
         } else if sender == buttonConfigure {
             let defaults = NSUserDefaults.standardUserDefaults()
-            let location = defaults.dictionaryForKey("location")
+            let location = defaults.dictionaryForKey("location")!
+            println(location.description)
             
             showLocationSetup()
         }

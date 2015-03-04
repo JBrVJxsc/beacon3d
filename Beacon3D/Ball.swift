@@ -16,7 +16,7 @@ enum Ball {
         ball.strokeColor = UIColor(netHex: Config.BallColor)
         ball.position = position
         ball.name = Config.BallCategoryName
-        ball.physicsBody = SKPhysicsBody(circleOfRadius: circleOfRadius) 
+        ball.physicsBody = SKPhysicsBody(circleOfRadius: circleOfRadius)
         ball.physicsBody!.allowsRotation = false
         ball.physicsBody!.friction = 0
         ball.physicsBody!.restitution = 1
