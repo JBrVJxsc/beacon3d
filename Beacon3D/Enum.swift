@@ -12,4 +12,5 @@ enum Enum: String {
     case MoveAvatar = "MoveAvatar"
     case SendMap = "SendMap"
     case HitBall = "HitBall"
+    case RotateAvatar = "RotateAvatar"
 }

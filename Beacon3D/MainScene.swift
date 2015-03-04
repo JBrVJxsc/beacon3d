@@ -11,7 +11,6 @@ import SpriteKit
 class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
     
     var location = ESTLocation()
-    let locationManager = ESTIndoorLocationManager()
     let buttonPlay = Button(circleOfRadius: Config.ButtonRadius)
     let buttonConfigure = Button(circleOfRadius: Config.ButtonRadius)
     let buttonRanking = Button(circleOfRadius: Config.ButtonRadius)
@@ -30,11 +29,6 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
         
         initBackground()
         initButtons()
-        initLocationManager()
-    }
-    
-    func initLocationManager() {
-        ESTConfig.setupAppID("app_28n6m2cfaq", andAppToken: "e6a2c5fcc28276a9ab28de9ea5961dd7")
     }
     
     func initButtons() {

@@ -24,8 +24,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     let avatar = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
     let avatarOpponent = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarOpponentPosition, isOpponent: true)
+    let avatarOpponentDefaultRotation = Math.degreesToRadians(180)
     
     var mainMap: ESTLocation!
+    let locationManager: ESTIndoorLocationManager = ESTIndoorLocationManager()
+    
     let motionManager: CMMotionManager = CMMotionManager()
     var timer: NSTimer!
     var firstFire: Bool = true
@@ -57,49 +60,66 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         initLabels()
         initAvatars()
         initHintTimer()
-    }
-    
-    func initMPC() {
-        appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
-        appDelegate.mpcHandler.setupPeerWithDisplayName(UIDevice.currentDevice().name)
-        appDelegate.mpcHandler.setupSession()
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "peerChangedStateWithNotification:", name: "MPC_DidChangeStateNotification", object: nil)
-        
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleReceivedDataWithNotification:", name: "MPC_DidReceiveDataNotification", object: nil)
+        initLocationManager()
     }
     
     func initSensors() {
         
-        return
+//        if  motionManager.accelerometerAvailable {
+//            let speed = 18.0
+//            motionManager.accelerometerUpdateInterval = 1.0 / 30.0
+//            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
+//                (data : CMAccelerometerData!, error: NSError!) in
+//                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
+//                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
+//                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
+//                self.ball.runAction(move)
+//                
+//                let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
+//                let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+//                
+//                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+//            }
+//        }
+//        
+//        if motionManager.gyroAvailable {
+//            motionManager.gyroUpdateInterval = 1 / 30
+//            motionManager.startGyroUpdatesToQueue(NSOperationQueue.currentQueue()) {
+//            (data : CMGyroData!, error: NSError!) in
+//                println(data.description)
+//            }
+//        }
+//        
+//        if motionManager.magnetometerAvailable {
+//            motionManager.magnetometerUpdateInterval = 1 / 20
+//            motionManager.startMagnetometerUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
+//            (data: CMMagnetometerData!, error: NSError!) -> Void in
+//                println(data.description)
+//            })
+//        }
         
-        if  motionManager.accelerometerAvailable {
-            let speed = 18.0
-            motionManager.accelerometerUpdateInterval = 1.0 / 30.0
-            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
-                (data : CMAccelerometerData!, error: NSError!) in
-
-                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
-                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
-                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
-                self.ball.runAction(move)
+        if motionManager.deviceMotionAvailable {
+            motionManager.deviceMotionUpdateInterval = 1 / 15
+            motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
+            (data: CMDeviceMotion!, error: NSError!) -> Void in
                 
-                let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
+                // 如果不在游戏中，则不检测。
+                if !self.isGaming {
+                    return
+                }
+                
+                let rotate = SKAction.rotateToAngle(CGFloat(data.attitude.yaw), duration: 0.01)
+                self.avatar.runAction(rotate)
+                
+                // 发送角色旋转信息。
+                let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": data.attitude.yaw]
                 let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
                 
                 self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
-                
-//          self.physicsWorld.gravity = CGVectorMake(CGFloat(data.acceleration.x * 2), CGFloat(data.acceleration.y * 2))
-            }
+            })
         }
         
-        //        if motionManager.gyroAvailable {
-        //            motionManager.gyroUpdateInterval = 1.0 / 0.5
-        //            motionManager.startGyroUpdatesToQueue(NSOperationQueue.currentQueue()) {
-        //            (data : CMGyroData!, error: NSError!) in
-        //                println(data.description)
-        //            }
-        //        }
+        
     }
     
     func initHintTimer() {
@@ -122,7 +142,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func initAvatars() {
         let fadeOut = SKAction.fadeOutWithDuration(0.01)
-        let rotate = SKAction.rotateByAngle(Math.degreesToRadians(180), duration: 0.01)
+        let rotate = SKAction.rotateByAngle(avatarOpponentDefaultRotation, duration: 0.01)
         avatar.runAction(fadeOut)
         avatarOpponent.runAction(SKAction.group([fadeOut, rotate]))
         avatar.hidden = true
@@ -241,6 +261,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             mainMap = ESTLocation(fromDictionary: map)
             let messageData = NSJSONSerialization.dataWithJSONObject(map, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
             self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+            
+            // 启动位置信息监控。
+            locationManager.startIndoorLocation(mainMap)
         }
     }
     
@@ -261,8 +284,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let x1: Float? = message.objectForKey("x")?.floatValue
             let y1: Float? = message.objectForKey("y")?.floatValue
 
-            var x: CGFloat = CGFloat(x1!)
-            var y: CGFloat = CGFloat(y1!)
+            let x: CGFloat = CGFloat(x1!)
+            let y: CGFloat = CGFloat(y1!)
             
             let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
             self.ball.runAction(move)
@@ -270,6 +293,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         // 接收地图信息。
         else if type == Enum.SendMap.rawValue {
             mainMap = ESTLocation(fromDictionary: message)
+            
+            // 启动位置信息监控。
+            locationManager.startIndoorLocation(mainMap)
+        }
+        // 角色旋转信息。
+        else if type == Enum.RotateAvatar.rawValue {
+            let r1: Float? = message.objectForKey("radians")?.floatValue
+            let r: CGFloat = CGFloat(r1!)
+
+            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 0.01)
+            self.avatarOpponent.runAction(rotate)
         }
     }
     
@@ -279,11 +313,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             position.x,
             position.y,
             position.orientation)
+        
+//        labelHint.text = text
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didFailToUpdatePositionWithError error: NSError!) {
-        let text = "It seems you are outside the location."
-        let err = NSLog(error.localizedDescription)
+        let err: () = NSLog(error.localizedDescription)
     }
     
     func initBackground() {
@@ -341,6 +376,21 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         
         setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, scoreBoardBox])
         addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, scoreBoardBox, button])
+    }
+    
+    func initLocationManager() {
+        ESTConfig.setupAppID("app_28n6m2cfaq", andAppToken: "e6a2c5fcc28276a9ab28de9ea5961dd7")
+        locationManager.delegate = self
+    }
+    
+    func initMPC() {
+        appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
+        appDelegate.mpcHandler.setupPeerWithDisplayName(UIDevice.currentDevice().name)
+        appDelegate.mpcHandler.setupSession()
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "peerChangedStateWithNotification:", name: "MPC_DidChangeStateNotification", object: nil)
+        
+        NSNotificationCenter.defaultCenter().addObserver(self, selector: "handleReceivedDataWithNotification:", name: "MPC_DidReceiveDataNotification", object: nil)
     }
     
     func makeBall() {
