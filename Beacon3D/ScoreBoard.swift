@@ -15,13 +15,9 @@ class ScoreBoard: SKShapeNode {
     
     override init() {
         super.init()
-        
-        userInteractionEnabled = true
-        
         fillColor = UIColor(netHex: Config.GameBoardColor)
         strokeColor = UIColor(netHex: Config.BorderColor)
         lineWidth = Config.ScoreBoardBorderWidth
-        
         
         labelScore.fontName = "HelveticaNeue-Bold"
         labelScore.fontSize = labelScore.fontSize * 1.5
@@ -44,7 +40,6 @@ class ScoreBoard: SKShapeNode {
         let biggerSmallerBigger = SKAction.scaleTo(1.0, duration: 0.1)
         let group = SKAction.group([fadeIn, SKAction.sequence([bigger, biggerSmaller, biggerSmallerBigger])])
         let seq = SKAction.sequence([delay, group])
-//        runAction(seq)
         runAction(seq, completion: { () -> Void in
             self.setScore(0)
         })

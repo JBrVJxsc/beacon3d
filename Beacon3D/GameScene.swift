@@ -16,10 +16,12 @@ protocol GameSceneExitDelegate {
 
 class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate, ESTIndoorLocationManagerDelegate, MotionEndedDelegate {
     
-    let ball = Ball.getBall(Config.BallRadius, position: Config.BallPosition)
+    var ball: SKShapeNode!
     let button = Button(circleOfRadius: Config.ButtonRadius)
     let scoreBoardPlayer = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
     let scoreBoardOpponent = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
+    let scoreBoardPlayerPipe = SKShapeNode(rectOfSize: Config.ScoreBoardPipeSize)
+    let scoreBoardOpponentPipe = SKShapeNode(rectOfSize: Config.ScoreBoardPipeSize)
     var scoreBoardBox: SKSpriteNode!
     
     let avatarPlayer = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
@@ -122,6 +124,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         
     }
     
+    // 碰撞检测。
     func didBeginContact(contact: SKPhysicsContact) {
         var firstBody: SKPhysicsBody
         var secondBody: SKPhysicsBody
@@ -138,8 +141,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
 
         } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorPlayerCategory {
             scoreBoardOpponent.addScore()
+            ball.removeFromParent()
+            ball = nil
         } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorOpponentCategory {
             scoreBoardPlayer.addScore()
+            ball.removeFromParent()
+            ball = nil
         }
     }
     
@@ -175,8 +182,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         button.runAction(SKAction.group([small, move]))
         
         // 显示计分板。
-        scoreBoardPlayer.show(0.3)
-        scoreBoardOpponent.show(0.5)
+//        scoreBoardPlayer.show(0.3)
+//        scoreBoardOpponent.show(0.5)
+//        showPipe(false, delay: 0.5)
+//        showPipe(true, delay: 0.7)
+        showPipe(false, delay: 0.3)
+        showPipe(true, delay: 0.5)
+        scoreBoardPlayer.show(0.5)
+        scoreBoardOpponent.show(0.7)
         
         // 显示玩家图标。
         avatarPlayer.hidden = false
@@ -187,13 +200,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         // 如果当前是主机，则将地图发送给对方。
         if isHolder {
             let defaults = NSUserDefaults.standardUserDefaults()
-            let map = defaults.dictionaryForKey("location")!
-            mainMap = ESTLocation(fromDictionary: map)
-            let messageData = NSJSONSerialization.dataWithJSONObject(map, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
-            self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
-            
-            // 启动位置信息监控。
-            locationManager.startIndoorLocation(mainMap)
+            let temp = defaults.dictionaryForKey("location")?
+            if temp != nil {
+                let map = defaults.dictionaryForKey("location")!
+                mainMap = ESTLocation(fromDictionary: map)
+                let messageData = NSJSONSerialization.dataWithJSONObject(map, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+                
+                // 启动位置信息监控。
+                locationManager.startIndoorLocation(mainMap)
+            }
         }
     }
     
@@ -251,6 +267,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func didMotionEnded(motion: UIEventSubtype, withEvent event: UIEvent) {
         if motion == .MotionShake {
+            if ball != nil {
+                println("x: \(ball.position.x), y: \(ball.position.y)")
+                return
+            }
             makeBall()
         }
     }
@@ -310,16 +330,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         scoreBoardBox.position = Config.ScoreBoardBoxPosition
         scoreBoardBox.addChild(scoreBoardPlayer)
         scoreBoardBox.addChild(scoreBoardOpponent)
+        scoreBoardBox.addChild(scoreBoardPlayerPipe)
+        scoreBoardBox.addChild(scoreBoardOpponentPipe)
         scoreBoardPlayer.hidden = true
         scoreBoardPlayer.position = Config.ScoreBoardPlayerPosition
         scoreBoardPlayer.setAvatar(false)
         scoreBoardOpponent.hidden = true
         scoreBoardOpponent.position = Config.ScoreBoardOpponentPosition
         scoreBoardOpponent.setAvatar(true)
+        scoreBoardPlayerPipe.hidden = true
+        scoreBoardPlayerPipe.position = Config.ScoreBoardPipePlayerPosition
+        scoreBoardPlayerPipe.fillColor = UIColor(netHex: Config.ScoreBoardPipeColor)
+        scoreBoardPlayerPipe.strokeColor = UIColor(netHex: Config.ScoreBoardPipeColor)
+        scoreBoardOpponentPipe.hidden = true
+        scoreBoardOpponentPipe.position = Config.ScoreBoardPipeOpponentPosition
+        scoreBoardOpponentPipe.fillColor = UIColor(netHex: Config.ScoreBoardPipeColor)
+        scoreBoardOpponentPipe.strokeColor = UIColor(netHex: Config.ScoreBoardPipeColor)
+
         let fadeOut = SKAction.fadeOutWithDuration(0.01)
         let scaleToZero = SKAction.scaleTo(0, duration: 0.01)
         scoreBoardPlayer.runAction(SKAction.group([fadeOut, scaleToZero]))
         scoreBoardOpponent.runAction(SKAction.group([fadeOut, scaleToZero]))
+        scoreBoardPlayerPipe.runAction(SKAction.group([fadeOut, scaleToZero]))
+        scoreBoardOpponentPipe.runAction(SKAction.group([fadeOut, scaleToZero]))
         
         // 设置游戏界面物理属性。
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
@@ -336,7 +369,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func makeBall() {
-        let ball = Ball.getBall(Config.BallRadius, position: Config.CenterCirclePosition)
+        ball = Ball.getBall(Config.BallRadius, position: Config.CenterCirclePosition)
         ball.fillColor =  UIColor(netHex: Config.ButtonColor)
         addChild(ball)
         let duration = 6.0
@@ -518,6 +551,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
             })
         }
+    }
+    
+    func showPipe(isOpponent: Bool, delay: NSTimeInterval) {
+        var pipe: SKShapeNode!
+        if isOpponent {
+            pipe = scoreBoardOpponentPipe
+        } else {
+            pipe = scoreBoardPlayerPipe
+        }
+        pipe.hidden = false
+        let delay = SKAction.waitForDuration(delay)
+        let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.6)
+        let bigger = SKAction.scaleTo(1.1, duration: 0.2)
+        bigger.timingMode = .EaseIn
+        let biggerSmaller = SKAction.scaleTo(0.9, duration: 0.1)
+        let biggerSmallerBigger = SKAction.scaleTo(1.0, duration: 0.1)
+        let group = SKAction.group([fadeIn, SKAction.sequence([bigger, biggerSmaller, biggerSmallerBigger])])
+        let seq = SKAction.sequence([delay, group])
+        pipe.runAction(seq)
     }
     
     override func didMoveToView(view: SKView) {
