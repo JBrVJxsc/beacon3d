@@ -441,6 +441,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func didPress(sender: Button) {
         if isHolder && !isGaming {
+            startGame()
             return
         }
         if !isGaming {

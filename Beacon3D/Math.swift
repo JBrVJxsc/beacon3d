@@ -43,4 +43,9 @@ enum Math {
     static func vectorTurnover(vector: CGVector) -> CGVector {
         return CGVectorMake(-vector.dx, -vector.dy)
     }
+    
+    static func radiansToVector(radians: Double) -> CGVector {
+        let vector = CGVector(dx: sin(radians) * 10, dy: cos(radians) * 10)
+        return vector
+    }
 }
