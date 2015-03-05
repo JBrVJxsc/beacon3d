@@ -31,7 +31,7 @@ struct Config {
     static var AvatarPositionMinY: CGFloat = -BorderWidth - GameBoardHeight + AvatarRadius
     static var AvatarPositionMaxY: CGFloat = -BorderWidth - AvatarRadius
 
-    static var BallRadius: CGFloat = 10
+    static var BallRadius: CGFloat = BorderWidth / 2
     static var BallColor: Int = 0x61C3DB
     static var BallCategoryName = "ball"
     static var BallCategory: UInt32 = 0x1 << 0
@@ -69,12 +69,12 @@ struct Config {
     static var CenterLineColor: Int = BorderColor
     static var CenterLinePosition: CGPoint = CGPoint(x: GameBoardPosition.x, y: GameBoardPosition.y - GameBoardHeight / 2)
     static var CenterLineWidth: CGFloat = GameBoardWidth
-    static var CenterLineHeight: CGFloat = 1
+    static var CenterLineHeight: CGFloat = 2
     static var CenterLineSize: CGSize = CGSize(width: CenterLineWidth, height: CenterLineHeight)
     
     static var CenterCircleColor: Int = BorderColor
     static var CenterCirclePosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: GameBoardPosition.y - GameBoardHeight / 2)
-    static var CenterCircleLineWidth: CGFloat = 1
+    static var CenterCircleLineWidth: CGFloat = 2
     static var CenterCircleRadius: CGFloat = GameBoardWidth / 5.5
     
     static var ScoreBoardBoxPosition: CGPoint = CGPoint(x: 0, y: -ScreenWidth)
@@ -93,7 +93,7 @@ struct Config {
     static var ScoreBoardPipeOpponentPosition: CGPoint = CGPoint(x: ScoreBoardOpponentPosition.x, y: -ScoreBoardPipeSize.height / 2)
 
     static var DoorColor: Int = BorderColor
-    static var DoorLineWidth: CGFloat = 1
+    static var DoorLineWidth: CGFloat = 2
     static var DoorPlayerPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: -BorderWidth - GameBoardHeight + DoorHeight / 2 - (DoorLineWidth + 1) / 2)
     static var DoorPlayerCategory: UInt32 = 0x1 << 3
     static var DoorOpponentPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: -BorderWidth - DoorHeight / 2 + (DoorLineWidth + 1) / 2)

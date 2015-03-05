@@ -110,10 +110,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                     return
                 }
                 
+                // 旋转角色。
                 let rotate = SKAction.rotateToAngle(CGFloat(data.attitude.yaw), duration: self.motionManager.deviceMotionUpdateInterval)
                 self.avatarPlayer.runAction(rotate)
                 
-                // 发送角色旋转信息。
+                // 发送角色旋转信息给对方。
                 let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": data.attitude.yaw]
                 let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
                 
@@ -140,13 +141,51 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.BorderCategory {
 
         } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorPlayerCategory {
-            scoreBoardOpponent.addScore()
-            ball.removeFromParent()
-            ball = nil
+            ball.physicsBody = nil
+            addScore(true)
         } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorOpponentCategory {
-            scoreBoardPlayer.addScore()
-            ball.removeFromParent()
-            ball = nil
+            ball.physicsBody = nil
+            addScore(false)
+        }
+    }
+    
+    func addScore(isOpponent: Bool) {
+        if isOpponent {
+            let wait = SKAction.waitForDuration(0.1)
+            let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            moveToOriginal.timingMode = .EaseInEaseOut
+            let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            moveRight.timingMode = .EaseInEaseOut
+            let moveDown = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth), duration: 0.3)
+            moveDown.timingMode = .EaseInEaseOut
+            let fadeOut = SKAction.fadeOutWithDuration(0.3)
+            
+            let action = SKAction.sequence([wait, moveToOriginal, moveRight, SKAction.group([moveDown, fadeOut])])
+            ball.runAction(action, completion: { () -> Void in
+                self.scoreBoardOpponent.addScore()
+                self.ball.removeFromParent()
+                self.ball = nil
+            })
+        } else {
+            let wait = SKAction.waitForDuration(0.1)
+            let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth / 2), duration: 0.2)
+            moveToOriginal.timingMode = .EaseInEaseOut
+            let moveLeft = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth / 2), duration: 0.2)
+            moveLeft.timingMode = .EaseInEaseOut
+            let moveDown = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            moveDown.timingMode = .EaseInEaseOut
+            let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            moveRight.timingMode = .EaseInEaseOut
+            let moveDown1 = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth), duration: 0.3)
+            moveDown1.timingMode = .EaseInEaseOut
+            let fadeOut = SKAction.fadeOutWithDuration(0.3)
+            
+            let action = SKAction.sequence([wait, moveToOriginal, moveLeft, moveDown, moveRight, SKAction.group([moveDown1, fadeOut])])
+            ball.runAction(action, completion: { () -> Void in
+                self.scoreBoardPlayer.addScore()
+                self.ball.removeFromParent()
+                self.ball = nil
+            })
         }
     }
     
@@ -182,10 +221,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         button.runAction(SKAction.group([small, move]))
         
         // 显示计分板。
-//        scoreBoardPlayer.show(0.3)
-//        scoreBoardOpponent.show(0.5)
-//        showPipe(false, delay: 0.5)
-//        showPipe(true, delay: 0.7)
         showPipe(false, delay: 0.3)
         showPipe(true, delay: 0.5)
         scoreBoardPlayer.show(0.5)
@@ -273,6 +308,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             }
             makeBall()
         }
+    }
+    
+    func makeBall() {
+        ball = Ball.getBall(Config.BallRadius, position: avatarPlayer.position)
+        ball.fillColor =  UIColor(netHex: Config.ButtonColor)
+        // Set Ball Vector.
+        // Code.
+        
+        // Send Avatar Position and Ball Vector.
+        // Code.
+        addChild(ball)
+        let duration = 6.0
+        let scaleToBig = SKAction.scaleTo(3.0, duration: duration / 2)
+        scaleToBig.timingMode = .EaseOut
+        let scaleToSmall = SKAction.scaleTo(1.0, duration: duration / 2)
+        scaleToSmall.timingMode = .EaseIn
+        let scaleSeq = SKAction.sequence([scaleToBig, scaleToSmall])
+        let action = SKAction.repeatActionForever(scaleSeq)
+        //        ball.runAction(action)
     }
     
     func initBackground() {
@@ -368,20 +422,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, doorPlayer, doorOpponent, scoreBoardBox, button])
     }
     
-    func makeBall() {
-        ball = Ball.getBall(Config.BallRadius, position: Config.CenterCirclePosition)
-        ball.fillColor =  UIColor(netHex: Config.ButtonColor)
-        addChild(ball)
-        let duration = 6.0
-        let scaleToBig = SKAction.scaleTo(3.0, duration: duration / 2)
-        scaleToBig.timingMode = .EaseOut
-        let scaleToSmall = SKAction.scaleTo(1.0, duration: duration / 2)
-        scaleToSmall.timingMode = .EaseIn
-        let scaleSeq = SKAction.sequence([scaleToBig, scaleToSmall])
-        let action = SKAction.repeatActionForever(scaleSeq)
-//        ball.runAction(action)
-    }
-    
     func showLocationSetup() {
         let locationSetupVC = ESTIndoorLocationManager.locationSetupControllerWithCompletion { (location, error) in
             
@@ -400,7 +440,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func didPress(sender: Button) {
-        
         if isHolder && !isGaming {
             return
         }
