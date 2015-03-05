@@ -25,6 +25,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     var scoreBoardBox: SKSpriteNode!
     
     let avatarPlayer = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarPosition, isOpponent: false)
+    var avatarPlayerCurrentRadians: Double = 0
     let avatarOpponent = Avatar.getAvatar(Config.AvatarRadius, position: Config.AvatarOpponentPosition, isOpponent: true)
     let avatarOpponentDefaultRotation = Math.degreesToRadians(180)
     
@@ -101,7 +102,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
 //        }
         
         if motionManager.deviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 1 / 5
+            motionManager.deviceMotionUpdateInterval = 1 / 4
             motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
             (data: CMDeviceMotion!, error: NSError!) -> Void in
                 
@@ -111,18 +112,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 }
                 
                 // 旋转角色。
-                let rotate = SKAction.rotateToAngle(CGFloat(data.attitude.yaw), duration: self.motionManager.deviceMotionUpdateInterval)
+                self.avatarPlayerCurrentRadians = data.attitude.yaw
+                let rotate = SKAction.rotateToAngle(CGFloat(self.avatarPlayerCurrentRadians), duration: self.motionManager.deviceMotionUpdateInterval)
                 self.avatarPlayer.runAction(rotate)
                 
                 // 发送角色旋转信息给对方。
-                let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": data.attitude.yaw]
-                let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
-                
-                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+//                let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": self.avatarPlayerCurrentRadians]
+//                let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+//                
+//                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
             })
         }
-        
-        
     }
     
     // 碰撞检测。
@@ -153,11 +153,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if isOpponent {
             let wait = SKAction.waitForDuration(0.1)
             let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
-            moveToOriginal.timingMode = .EaseInEaseOut
+            moveToOriginal.timingMode = .EaseIn
             let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
-            moveRight.timingMode = .EaseInEaseOut
+            moveRight.timingMode = .EaseIn
             let moveDown = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth), duration: 0.3)
-            moveDown.timingMode = .EaseInEaseOut
+            moveDown.timingMode = .EaseIn
             let fadeOut = SKAction.fadeOutWithDuration(0.3)
             
             let action = SKAction.sequence([wait, moveToOriginal, moveRight, SKAction.group([moveDown, fadeOut])])
@@ -169,15 +169,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         } else {
             let wait = SKAction.waitForDuration(0.1)
             let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth / 2), duration: 0.2)
-            moveToOriginal.timingMode = .EaseInEaseOut
+            moveToOriginal.timingMode = .EaseIn
             let moveLeft = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth / 2), duration: 0.2)
-            moveLeft.timingMode = .EaseInEaseOut
+            moveLeft.timingMode = .EaseIn
             let moveDown = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
-            moveDown.timingMode = .EaseInEaseOut
+            moveDown.timingMode = .EaseIn
             let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
-            moveRight.timingMode = .EaseInEaseOut
+            moveRight.timingMode = .EaseIn
             let moveDown1 = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth), duration: 0.3)
-            moveDown1.timingMode = .EaseInEaseOut
+            moveDown1.timingMode = .EaseIn
             let fadeOut = SKAction.fadeOutWithDuration(0.3)
             
             let action = SKAction.sequence([wait, moveToOriginal, moveLeft, moveDown, moveRight, SKAction.group([moveDown1, fadeOut])])
@@ -283,7 +283,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let r1: Float? = message.objectForKey("radians")?.floatValue
             let r: CGFloat = CGFloat(r1!)
 
-            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 1 / 5)
+            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 1 / 4)
             self.avatarOpponent.runAction(rotate)
         }
     }
@@ -315,7 +315,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         ball.fillColor =  UIColor(netHex: Config.ButtonColor)
         // Set Ball Vector.
         // Code.
-        
+        ball.physicsBody?.velocity = Math.radiansToVector(avatarPlayerCurrentRadians, times: 40)
         // Send Avatar Position and Ball Vector.
         // Code.
         addChild(ball)
@@ -447,7 +447,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if !isGaming {
             connectWithPlayer()
         } else {
-            exitGameScene()
+            makeBall()
+            return
+//            exitGameScene()
         }
     }
     

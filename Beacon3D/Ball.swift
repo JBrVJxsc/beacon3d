@@ -23,7 +23,6 @@ enum Ball {
         ball.physicsBody!.linearDamping = 0
         ball.physicsBody!.angularDamping = 0
         ball.physicsBody!.categoryBitMask = Config.BallCategory
-        ball.physicsBody!.velocity = CGVectorMake(0, 100)
         return ball
     }
     
