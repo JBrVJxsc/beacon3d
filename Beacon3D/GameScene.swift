@@ -117,10 +117,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 self.avatarPlayer.runAction(rotate)
                 
                 // 发送角色旋转信息给对方。
-//                let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": self.avatarPlayerCurrentRadians]
-//                let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
-//                
-//                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+                let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": self.avatarPlayerCurrentRadians]
+//                self.sendMessage(messageDict)
             })
         }
     }
@@ -239,9 +237,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             if temp != nil {
                 let map = defaults.dictionaryForKey("location")!
                 mainMap = ESTLocation(fromDictionary: map)
-                let messageData = NSJSONSerialization.dataWithJSONObject(map, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
-                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
-                
+                sendMessage(map)
                 // 启动位置信息监控。
                 locationManager.startIndoorLocation(mainMap)
             }
@@ -286,6 +282,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 1 / 4)
             self.avatarOpponent.runAction(rotate)
         }
+        // 对方发球信息。
+        else if type == Enum.SendBall.rawValue {
+            var x1: Float? = message.objectForKey("x")?.floatValue
+            var y1: Float? = message.objectForKey("y")?.floatValue
+            
+            var x: CGFloat = CGFloat(x1!)
+            var y: CGFloat = CGFloat(y1!)
+            
+            println("location: x: \(x), y: \(y)")
+            
+            ball = Ball.getBall(Config.BallRadius, position: Math.positionTurnover(CGPoint(x: x, y: y)))
+            ball.fillColor =  UIColor(netHex: Config.ButtonColor)
+            // 设置球的向量。
+            x1 = message.objectForKey("dx")?.floatValue
+            y1 = message.objectForKey("dy")?.floatValue
+            
+            x = CGFloat(x1!)
+            y = CGFloat(y1!)
+            
+            println("vector: dx: \(x), dy: \(y)")
+
+            let vector = Math.vectorTurnover(CGVector(dx: x, dy: y))
+            ball.physicsBody?.velocity = vector
+            addChild(ball)
+        }
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didUpdatePosition position: ESTOrientedPoint!, inLocation location: ESTLocation!) {
@@ -313,20 +334,22 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     func makeBall() {
         ball = Ball.getBall(Config.BallRadius, position: avatarPlayer.position)
         ball.fillColor =  UIColor(netHex: Config.ButtonColor)
-        // Set Ball Vector.
-        // Code.
-        ball.physicsBody?.velocity = Math.radiansToVector(avatarPlayerCurrentRadians, times: 40)
-        // Send Avatar Position and Ball Vector.
-        // Code.
+        // 设置球的向量。
+        let vector = Math.radiansToVector(avatarPlayerCurrentRadians, times: 40)
+        ball.physicsBody?.velocity = vector
+        // 将球的位置与向量发送给对方。
+        let messageDict = ["type": Enum.SendBall.rawValue, "x": avatarPlayer.position.x, "y": avatarPlayer.position.y, "dx": vector.dx, "dy": vector.dy]
+        sendMessage(messageDict)
+        
+        println(position)
+        println(vector)
+        
         addChild(ball)
-        let duration = 6.0
-        let scaleToBig = SKAction.scaleTo(3.0, duration: duration / 2)
-        scaleToBig.timingMode = .EaseOut
-        let scaleToSmall = SKAction.scaleTo(1.0, duration: duration / 2)
-        scaleToSmall.timingMode = .EaseIn
-        let scaleSeq = SKAction.sequence([scaleToBig, scaleToSmall])
-        let action = SKAction.repeatActionForever(scaleSeq)
-        //        ball.runAction(action)
+    }
+    
+    func sendMessage(obj: AnyObject) {
+        let messageData = NSJSONSerialization.dataWithJSONObject(obj, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
+        appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
     }
     
     func initBackground() {
