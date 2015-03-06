@@ -79,14 +79,14 @@ struct Config {
     
     static var ScoreBoardBoxPosition: CGPoint = CGPoint(x: 0, y: -ScreenWidth)
     static var ScoreBoardBoxWidth: CGFloat = ScreenWidth
-    static var ScoreBoardBoxHeight: CGFloat = (-ButtonPositionInGaming.y - ButtonRadius * ButtonScaleRatioInGaming + ScoreBoardBoxPosition.y) * 0.8
+    static var ScoreBoardBoxHeight: CGFloat = ScreenHeight - BorderWidth * 2 - GameBoardHeight
     static var ScoreBoardBoxSize: CGSize = CGSize(width: ScoreBoardBoxWidth, height: ScoreBoardBoxHeight)
     
     static var ScoreBoardMarge: CGFloat = BorderWidth * 1.5
-    static var ScoreBoardSize: CGSize = CGSize(width: ScoreBoardBoxWidth / 3, height: ScoreBoardBoxHeight / 1.8)
+    static var ScoreBoardSize: CGSize = CGSize(width: ScoreBoardBoxWidth / 3, height: ScoreBoardBoxHeight / 3)
     static var ScoreBoardBorderWidth: CGFloat = BorderWidth
-    static var ScoreBoardPlayerPosition: CGPoint = CGPoint(x: (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 + ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 2.1)
-    static var ScoreBoardOpponentPosition: CGPoint = CGPoint(x: ScoreBoardBoxWidth - (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 - ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 2.1)
+    static var ScoreBoardPlayerPosition: CGPoint = CGPoint(x: (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 + ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 3.1)
+    static var ScoreBoardOpponentPosition: CGPoint = CGPoint(x: ScoreBoardBoxWidth - (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 - ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 3.1)
     static var ScoreBoardPipeColor: Int = BorderColor
     static var ScoreBoardPipeSize: CGSize = CGSize(width: BorderWidth,height: -ScoreBoardPlayerPosition.y - (ScoreBoardSize.height + ScoreBoardBorderWidth) / 2)
     static var ScoreBoardPipePlayerPosition: CGPoint = CGPoint(x: ScoreBoardPlayerPosition.x, y: -ScoreBoardPipeSize.height / 2)
@@ -101,4 +101,15 @@ struct Config {
     static var DoorWidth: CGFloat = ScreenWidth / 3
     static var DoorHeight: CGFloat = BorderWidth / 2
     static var DoorSize: CGSize = CGSize(width: DoorWidth, height: DoorHeight)
+    
+    static var MenuBackColor: Int = BackgroungColor
+    static var MenuBorderColor: Int = BorderColor
+    static var MenuWidth: CGFloat = ScreenWidth / 2
+    static var MenuHeight: CGFloat = ScreenWidth * 2 / 3
+    static var MenuSize: CGSize = CGSize(width: MenuWidth, height: MenuHeight)
+    static var MenuPosition: CGPoint = CGPoint(x: ScreenWidth / 2, y: -ScreenHeight / 2)
+    static var MenuLineWidth: CGFloat = BorderWidth
+    
+    static var ResumeButtonPosition: CGPoint = CGPoint(x: 0, y: (MenuHeight - MenuLineWidth * 2) / 4)
+    static var QuitButtonPosition: CGPoint = CGPoint(x: 0, y: -(MenuHeight - MenuLineWidth * 2) / 4)
 }

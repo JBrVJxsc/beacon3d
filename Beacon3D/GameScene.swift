@@ -16,6 +16,9 @@ protocol GameSceneExitDelegate {
 
 class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDelegate, ButtonPressDelegate, ESTIndoorLocationManagerDelegate, MotionEndedDelegate {
     
+    var menu: SKShapeNode!
+    let buttonResume = Button(circleOfRadius: Config.ButtonRadius)
+    let buttonQuit = Button(circleOfRadius: Config.ButtonRadius)
     var ball: SKShapeNode!
     let button = Button(circleOfRadius: Config.ButtonRadius)
     let scoreBoardPlayer = ScoreBoard(rectOfSize: Config.ScoreBoardSize)
@@ -49,6 +52,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     var isHolder: Bool = false
     var isGaming: Bool = false
     var isServing: Bool = false
+    var isShowingMenu: Bool = false
     
     required init(coder aDecoder: NSCoder) {
         fatalError("NSCoder not supported")
@@ -444,10 +448,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         // 设置计分板。
         scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardBoxSize)
         scoreBoardBox.position = Config.ScoreBoardBoxPosition
-        scoreBoardBox.addChild(scoreBoardPlayer)
-        scoreBoardBox.addChild(scoreBoardOpponent)
-        scoreBoardBox.addChild(scoreBoardPlayerPipe)
-        scoreBoardBox.addChild(scoreBoardOpponentPipe)
+//        scoreBoardBox.addChild(scoreBoardPlayer)
+//        scoreBoardBox.addChild(scoreBoardOpponent)
+//        scoreBoardBox.addChild(scoreBoardPlayerPipe)
+//        scoreBoardBox.addChild(scoreBoardOpponentPipe)
+        scoreBoardBox.addChildren([scoreBoardPlayer, scoreBoardOpponent, scoreBoardPlayerPipe, scoreBoardOpponentPipe])
         scoreBoardPlayer.hidden = true
         scoreBoardPlayer.position = Config.ScoreBoardPlayerPosition
         scoreBoardPlayer.setAvatar(false)
@@ -462,6 +467,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         scoreBoardOpponentPipe.position = Config.ScoreBoardPipeOpponentPosition
         scoreBoardOpponentPipe.fillColor = UIColor(netHex: Config.ScoreBoardPipeColor)
         scoreBoardOpponentPipe.strokeColor = UIColor(netHex: Config.ScoreBoardPipeColor)
+        
+        // 设置菜单。
+        menu = SKShapeNode(rectOfSize: Config.MenuSize)
+        menu.strokeColor = UIColor(netHex: Config.MenuBorderColor)
+        menu.fillColor = UIColor(netHex: Config.MenuBackColor)
+        menu.lineWidth = Config.MenuLineWidth
+        menu.position = Config.MenuPosition
+        menu.hidden = true
+        
+        buttonResume.addLabel("Resume")
+        buttonResume.position = Config.ResumeButtonPosition
+        buttonResume.setScale(Config.ButtonScaleRatioInGaming)
+        buttonResume.buttonPressDelegate = self
+        buttonQuit.addLabel("Quit")
+        buttonQuit.position = Config.QuitButtonPosition
+        buttonQuit.setScale(Config.ButtonScaleRatioInGaming)
+        buttonQuit.buttonPressDelegate = self
+        menu.addChildren([buttonResume, buttonQuit])
 
         let fadeOut = SKAction.fadeOutWithDuration(0.01)
         let scaleToZero = SKAction.scaleTo(0, duration: 0.01)
@@ -469,6 +492,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         scoreBoardOpponent.runAction(SKAction.group([fadeOut, scaleToZero]))
         scoreBoardPlayerPipe.runAction(SKAction.group([fadeOut, scaleToZero]))
         scoreBoardOpponentPipe.runAction(SKAction.group([fadeOut, scaleToZero]))
+        menu.runAction(SKAction.group([fadeOut, scaleToZero]))
         
         // 设置游戏界面物理属性。
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
@@ -481,7 +505,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         button.buttonPressDelegate = self
         
         setAnorPoint([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, scoreBoardBox])
-        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, doorPlayer, doorOpponent, scoreBoardBox, button])
+        addChildren([background, gameBoard, leftBorder, topBorder, rightBorder, bottomBorder, centerLine, centerCircle, doorPlayer, doorOpponent, scoreBoardBox, menu, button])
     }
     
     func showLocationSetup() {
@@ -501,20 +525,48 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             completion: nil)
     }
     
-    func didPress(sender: Button) {
-        if isHolder && !isGaming {
-            startGame()
-            return
-        }
-        if !isGaming {
-            connectWithPlayer()
+    func fadeAll(b: Bool) {
+        var action: SKAction!
+        if b {
+            action = SKAction.fadeAlphaTo(0.4, duration: 0.3)
+            avatarPlayer.hidden = true
+            avatarOpponent.hidden = true
         } else {
-            if isServing {
-                makeBall()
-                avatarPlayer.stopShining()
-                isServing = false
+            action = SKAction.fadeAlphaTo(1.0, duration: 0.3)
+            avatarPlayer.hidden = false
+            avatarOpponent.hidden = false
+        }
+        for child in children {
+            if child as NSObject == menu {
+                continue
             }
-//            exitGameScene()
+            child.runAction(action)
+        }
+    }
+    
+    func didPress(sender: Button) {
+        if sender == button {
+            if isShowingMenu {
+                return
+            }
+            if isHolder && !isGaming {
+                startGame()
+                return
+            }
+            if !isGaming {
+                connectWithPlayer()
+            } else {
+//            if isServing {
+//                makeBall()
+//                avatarPlayer.stopShining()
+//                isServing = false
+//            }
+                showMenu(true, delay: 0.1)
+            }
+        } else if sender == buttonResume {
+            showMenu(false, delay: 0.1)
+        } else if sender == buttonQuit {
+            exitGameScene()
         }
     }
     
@@ -667,6 +719,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 let fadeIn = SKAction.fadeInWithDuration(0.5)
                 self.labelHint.runAction(SKAction.sequence([wait, fadeIn]))
             })
+        }
+    }
+    
+    func showMenu(b: Bool, delay: NSTimeInterval) {
+        isShowingMenu = b
+        if b {
+            fadeAll(true)
+            menu.hidden = false
+            let delay = SKAction.waitForDuration(delay)
+            let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.6)
+            let bigger = SKAction.scaleTo(1.1, duration: 0.2)
+            bigger.timingMode = .EaseIn
+            let biggerSmaller = SKAction.scaleTo(0.9, duration: 0.1)
+            let biggerSmallerBigger = SKAction.scaleTo(1.0, duration: 0.1)
+            let group = SKAction.group([fadeIn, SKAction.sequence([bigger, biggerSmaller, biggerSmallerBigger])])
+            let seq = SKAction.sequence([delay, group])
+            menu.runAction(seq)
+        } else {
+            let bigger = SKAction.scaleTo(1.1, duration: 0.2)
+            bigger.timingMode = .EaseOut
+            let smaller = SKAction.scaleTo(0, duration: 0.3)
+            smaller.timingMode = .EaseIn
+            menu.runAction(SKAction.sequence([bigger, smaller]), completion: { () -> Void in
+                self.fadeAll(false)
+            })
+
         }
     }
     

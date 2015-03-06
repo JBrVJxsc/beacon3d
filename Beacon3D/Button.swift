@@ -49,6 +49,15 @@ class Button: SKShapeNode {
         self.scale = scale
     }
     
+    func addLabel(text: String) {
+        let label = SKLabelNode(text: text)
+        label.fontName = "HelveticaNeue-Bold"
+//        label.fontSize = label.fontSize * 1.5
+        label.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
+        label.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
+        addChild(label)
+    }
+    
     func startShining(duration: NSTimeInterval) {
         let smaller = SKAction.scaleTo(scale * 0.8, duration: duration)
         smaller.timingMode = .EaseOut

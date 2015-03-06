@@ -52,4 +52,17 @@ extension SKShapeNode {
         runAction(fadeIn)
     }
 
+    public func addChildren(nodes: [SKNode]) {
+        for child in nodes {
+            addChild(child)
+        }
+    }
+}
+
+extension SKSpriteNode {
+    public func addChildren(nodes: [SKNode]) {
+        for child in nodes {
+            addChild(child)
+        }
+    }
 }
