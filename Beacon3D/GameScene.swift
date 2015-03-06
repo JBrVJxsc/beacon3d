@@ -298,6 +298,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             var x: CGFloat = CGFloat(x1!)
             var y: CGFloat = CGFloat(y1!)
             
+            if ball != nil {
+                ball.removeFromParent()
+                ball = nil
+            }
+            
             ball = Ball.getBall(Config.BallRadius, position: Math.positionTurnover(CGPoint(x: x, y: y)))
             ball.fillColor =  UIColor(netHex: Config.ButtonColor)
             // 设置球的向量。
@@ -335,19 +340,33 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 return
             }
             
+            // 如果是普通的击球，则测试球是否在范围内。
             if ball != nil {
-                // Check if the ball is around.
-                // If so, hit the ball.
-                println("x: \(ball.position.x), y: \(ball.position.y)")
+                // 如果球在附近，则移除老球，发出新球。
+                if isNearTheBall() {
+                    ball.removeFromParent()
+                    ball = nil
+                    makeBall()
+                }
             }
         }
+    }
+    
+    func isNearTheBall() -> Bool {
+        println("x: \(ball.position.x), y: \(ball.position.y)")
+        let x = avatarPlayer.position.x - ball.position.x
+        let y = avatarPlayer.position.y - ball.position.y
+        if sqrt(x * x + y * y) <= Config.BallRadius + Config.AvatarRadius * 2 {
+            return true
+        }
+        return false
     }
     
     func makeBall() {
         ball = Ball.getBall(Config.BallRadius, position: avatarPlayer.position)
         ball.fillColor =  UIColor(netHex: Config.ButtonColor)
         // 设置球的向量。
-        let vector = Math.radiansToVector(avatarPlayerCurrentRadians, times: 40)
+        let vector = Math.radiansToVector(avatarPlayerCurrentRadians, times: 10)
         ball.physicsBody?.velocity = vector
         // 将球的位置与向量发送给对方。
         let messageDict = ["type": Enum.SendBall.rawValue, "x": avatarPlayer.position.x, "y": avatarPlayer.position.y, "dx": vector.dx, "dy": vector.dy]
@@ -490,7 +509,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if !isGaming {
             connectWithPlayer()
         } else {
-            exitGameScene()
+            if isServing {
+                makeBall()
+                avatarPlayer.stopShining()
+                isServing = false
+            }
+//            exitGameScene()
         }
     }
     
