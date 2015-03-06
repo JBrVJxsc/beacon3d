@@ -36,6 +36,8 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     var timer: NSTimer!
     var firstFire: Bool = true
     
+    var rotateTimer: NSTimer!
+    
     let labelHint = SKLabelNode(text: "")
     let hints = ["Hold", "To", "Create", "Game", "Touch", "To", "Join", "Game"]
     var hintIndex = 0
@@ -46,6 +48,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     var isHolder: Bool = false
     var isGaming: Bool = false
+    var isServing: Bool = false
     
     required init(coder aDecoder: NSCoder) {
         fatalError("NSCoder not supported")
@@ -62,6 +65,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         initMPC()
         initLabels()
         initAvatars()
+        initRotateTime()
         initHintTimer()
         initLocationManager()
     }
@@ -115,10 +119,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 self.avatarPlayerCurrentRadians = data.attitude.yaw
                 let rotate = SKAction.rotateToAngle(CGFloat(self.avatarPlayerCurrentRadians), duration: self.motionManager.deviceMotionUpdateInterval)
                 self.avatarPlayer.runAction(rotate)
-                
-                // 发送角色旋转信息给对方。
-                let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": self.avatarPlayerCurrentRadians]
-//                self.sendMessage(messageDict)
             })
         }
     }
@@ -150,39 +150,41 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     func addScore(isOpponent: Bool) {
         if isOpponent {
             let wait = SKAction.waitForDuration(0.1)
-            let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.3)
             moveToOriginal.timingMode = .EaseIn
-            let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.3)
             moveRight.timingMode = .EaseIn
-            let moveDown = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth), duration: 0.3)
+            let moveDown = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipeOpponentPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth * 2), duration: 0.4)
             moveDown.timingMode = .EaseIn
-            let fadeOut = SKAction.fadeOutWithDuration(0.3)
+            let fadeOut = SKAction.fadeOutWithDuration(0.4)
             
             let action = SKAction.sequence([wait, moveToOriginal, moveRight, SKAction.group([moveDown, fadeOut])])
             ball.runAction(action, completion: { () -> Void in
                 self.scoreBoardOpponent.addScore()
                 self.ball.removeFromParent()
                 self.ball = nil
+                self.serveBall(false)
             })
         } else {
             let wait = SKAction.waitForDuration(0.1)
-            let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth / 2), duration: 0.2)
+            let moveToOriginal = SKAction.moveTo(CGPoint(x: Config.ScreenWidth / 2, y: -Config.BorderWidth / 2), duration: 0.3)
             moveToOriginal.timingMode = .EaseIn
-            let moveLeft = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth / 2), duration: 0.2)
+            let moveLeft = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth / 2), duration: 0.3)
             moveLeft.timingMode = .EaseIn
-            let moveDown = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            let moveDown = SKAction.moveTo(CGPoint(x: Config.BallRadius, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.3)
             moveDown.timingMode = .EaseIn
-            let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.2)
+            let moveRight = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2), duration: 0.5)
             moveRight.timingMode = .EaseIn
-            let moveDown1 = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth), duration: 0.3)
+            let moveDown1 = SKAction.moveTo(CGPoint(x: Config.ScoreBoardPipePlayerPosition.x, y: -Config.BorderWidth - Config.GameBoardHeight - Config.BorderWidth / 2 - Config.ScoreBoardPipeSize.height - Config.ScoreBoardBorderWidth * 2), duration: 0.4)
             moveDown1.timingMode = .EaseIn
-            let fadeOut = SKAction.fadeOutWithDuration(0.3)
+            let fadeOut = SKAction.fadeOutWithDuration(0.4)
             
             let action = SKAction.sequence([wait, moveToOriginal, moveLeft, moveDown, moveRight, SKAction.group([moveDown1, fadeOut])])
             ball.runAction(action, completion: { () -> Void in
                 self.scoreBoardPlayer.addScore()
                 self.ball.removeFromParent()
                 self.ball = nil
+                self.serveBall(true)
             })
         }
     }
@@ -241,7 +243,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 // 启动位置信息监控。
                 locationManager.startIndoorLocation(mainMap)
             }
+            serveBall(false)
+        } else {
+            serveBall(true)
         }
+        
+        // 启动发送角色旋转信息的计时器。
+        rotateTimer.fire()
     }
     
     func handleReceivedDataWithNotification(notification: NSNotification) {
@@ -279,7 +287,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let r1: Float? = message.objectForKey("radians")?.floatValue
             let r: CGFloat = CGFloat(r1!)
 
-            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 1 / 4)
+            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 0.5)
             self.avatarOpponent.runAction(rotate)
         }
         // 对方发球信息。
@@ -290,8 +298,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             var x: CGFloat = CGFloat(x1!)
             var y: CGFloat = CGFloat(y1!)
             
-            println("location: x: \(x), y: \(y)")
-            
             ball = Ball.getBall(Config.BallRadius, position: Math.positionTurnover(CGPoint(x: x, y: y)))
             ball.fillColor =  UIColor(netHex: Config.ButtonColor)
             // 设置球的向量。
@@ -300,8 +306,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             
             x = CGFloat(x1!)
             y = CGFloat(y1!)
-            
-            println("vector: dx: \(x), dy: \(y)")
 
             let vector = Math.vectorTurnover(CGVector(dx: x, dy: y))
             ball.physicsBody?.velocity = vector
@@ -323,11 +327,19 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func didMotionEnded(motion: UIEventSubtype, withEvent event: UIEvent) {
         if motion == .MotionShake {
-            if ball != nil {
-                println("x: \(ball.position.x), y: \(ball.position.y)")
+            // 如果玩家发球。
+            if isServing {
+                makeBall()
+                avatarPlayer.stopShining()
+                isServing = false
                 return
             }
-            makeBall()
+            
+            if ball != nil {
+                // Check if the ball is around.
+                // If so, hit the ball.
+                println("x: \(ball.position.x), y: \(ball.position.y)")
+            }
         }
     }
     
@@ -340,16 +352,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         // 将球的位置与向量发送给对方。
         let messageDict = ["type": Enum.SendBall.rawValue, "x": avatarPlayer.position.x, "y": avatarPlayer.position.y, "dx": vector.dx, "dy": vector.dy]
         sendMessage(messageDict)
-        
-        println(position)
-        println(vector)
-        
         addChild(ball)
     }
     
     func sendMessage(obj: AnyObject) {
         let messageData = NSJSONSerialization.dataWithJSONObject(obj, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
         appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+    }
+    
+    func serveBall(isOpponent: Bool) {
+        if isOpponent {
+            isServing = false
+            avatarPlayer.stopShining()
+            avatarOpponent.startShining(0.8, fadeTo: 0.4)
+        } else {
+            isServing = true
+            avatarPlayer.startShining(0.8, fadeTo: 0.4)
+            avatarOpponent.stopShining()
+        }
     }
     
     func initBackground() {
@@ -470,9 +490,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if !isGaming {
             connectWithPlayer()
         } else {
-            makeBall()
-            return
-//            exitGameScene()
+            exitGameScene()
         }
     }
     
@@ -537,6 +555,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         println(state)
     }
     
+    func sendRotateMessage() {
+        // 发送角色旋转信息给对方。
+        let messageDict = ["type": Enum.RotateAvatar.rawValue, "radians": avatarPlayerCurrentRadians]
+        sendMessage(messageDict)
+    }
+    
     func initLocationManager() {
         ESTConfig.setupAppID("app_28n6m2cfaq", andAppToken: "e6a2c5fcc28276a9ab28de9ea5961dd7")
         locationManager.delegate = self
@@ -559,6 +583,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         }
         timer = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: Selector("hintFire"), userInfo: nil, repeats: true)
         timer.fire()
+    }
+    
+    func initRotateTime() {
+        rotateTimer = NSTimer.scheduledTimerWithTimeInterval(1.5, target: self, selector: Selector("sendRotateMessage"), userInfo: nil, repeats: true)
     }
     
     func hintFire() {

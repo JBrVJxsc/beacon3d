@@ -32,6 +32,24 @@ extension SKScene {
     
     public func addChildren(nodes: [SKNode]) {
         for child in nodes {
-            addChild(child)        }
+            addChild(child)
+        }
     }
+}
+
+extension SKShapeNode {
+    
+    public func startShining(interval: NSTimeInterval, fadeTo: CGFloat) {
+        let fadeOut = SKAction.fadeAlphaTo(fadeTo, duration: interval / 2)
+        let fadeIn = SKAction.fadeAlphaTo(1.0, duration: interval / 2)
+        let seq = SKAction.repeatActionForever(SKAction.sequence([fadeOut, fadeIn]))
+        runAction(seq)
+    }
+    
+    public func stopShining() {
+        removeAllActions()
+        let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 1)
+        runAction(fadeIn)
+    }
+
 }
