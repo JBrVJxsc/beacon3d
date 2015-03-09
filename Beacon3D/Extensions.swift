@@ -35,6 +35,12 @@ extension SKScene {
             addChild(child)
         }
     }
+    
+    public func runAction(nodes: [SKNode], action: SKAction!) {
+        for child in nodes {
+            child.runAction(action)
+        }
+    }
 }
 
 extension SKShapeNode {

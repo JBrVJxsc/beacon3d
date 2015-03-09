@@ -48,4 +48,16 @@ enum Math {
         let vector = CGVector(dx: sin(-radians) * 10 * times, dy: cos(-radians) * 10 * times)
         return vector
     }
+    
+    static func getDistance(p1: CGPoint, p2: CGPoint) -> CGFloat {
+        let x = p1.x - p2.x
+        let y = p1.y - p2.y
+        return sqrt(x * x + y * y)
+    }
+    
+    static func getDistance(x1: CGFloat, y1: CGFloat, x2: CGFloat, y2: CGFloat) -> CGFloat {
+        let x = x1 - x2
+        let y = y1 - y2
+        return sqrt(x * x + y * y)
+    }
 }

@@ -22,11 +22,13 @@ class GameViewController: UIViewController {
     var mainScene: MainScene!
     
     override func viewDidLoad() {
-        super.viewDidLoad()
-        
+        super.viewDidLoad()        
         // Configure the view.
         let skView = gamingView as SKView
         skView.multipleTouchEnabled = false
+        
+        // 禁止屏幕自动熄灭。
+        UIApplication.sharedApplication().idleTimerDisabled = true
         
         // Create and configure the scene.
         mainScene = MainScene(size: skView.bounds.size)

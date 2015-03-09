@@ -6,6 +6,7 @@
 //  Copyright (c) 2015 Xu ZHANG. All rights reserved.
 //
 
+import AudioToolbox
 import SpriteKit
 import CoreMotion
 import MultipeerConnectivity
@@ -76,39 +77,38 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func initSensors() {
         
-//        if  motionManager.accelerometerAvailable {
-//            let speed = 18.0
-//            motionManager.accelerometerUpdateInterval = 1.0 / 30.0
-//            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
-//                (data : CMAccelerometerData!, error: NSError!) in
-//                let x = self.ball.position.x + CGFloat(data.acceleration.x * speed)
-//                let y = self.ball.position.y + CGFloat(data.acceleration.y * speed)
-//                let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
-//                self.ball.runAction(move)
-//                
-//                let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
-//                let messageData = NSJSONSerialization.dataWithJSONObject(messageDict, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
-//                
-//                self.appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
-//            }
-//        }
-//        
-//        if motionManager.gyroAvailable {
-//            motionManager.gyroUpdateInterval = 1 / 30
-//            motionManager.startGyroUpdatesToQueue(NSOperationQueue.currentQueue()) {
-//            (data : CMGyroData!, error: NSError!) in
-//                println(data.description)
-//            }
-//        }
-//        
-//        if motionManager.magnetometerAvailable {
-//            motionManager.magnetometerUpdateInterval = 1 / 20
-//            motionManager.startMagnetometerUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
-//            (data: CMMagnetometerData!, error: NSError!) -> Void in
-//                println(data.description)
-//            })
-//        }
+        // 检测玩家移动。
+        if  motionManager.accelerometerAvailable {
+            let speed = 25.0
+            motionManager.accelerometerUpdateInterval = 1.0 / 5.0
+            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
+                (data : CMAccelerometerData!, error: NSError!) in
+                
+                // 如果不在游戏中，则不检测。
+                if !self.isGaming {
+                    return
+                }
+                
+                // 设置玩家自身位置。
+                let x = self.avatarPlayer.position.x + CGFloat(data.acceleration.x * speed)
+                let y = self.avatarPlayer.position.y + CGFloat(data.acceleration.y * speed)
+                
+                let position = Avatar.getSafePosition(x, y: y)
+                let dis = Math.getDistance(self.avatarPlayer.position.x, y1: self.avatarPlayer.position.y, x2: position.x, y2: position.y)
+                if dis > 18 {
+                    return
+                }
+                
+                let move = SKAction.moveTo(position, duration: self.motionManager.accelerometerUpdateInterval)
+                self.avatarPlayer.runAction(move)
+
+                // 发送位置信息。
+                let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
+                self.sendMessage(messageDict)
+            }
+        }
         
+        // 检测玩家旋转。
         if motionManager.deviceMotionAvailable {
             motionManager.deviceMotionUpdateInterval = 1 / 4
             motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
@@ -142,10 +142,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         
         if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.BorderCategory {
 
-        } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorPlayerCategory {
+        }
+        // 如果玩家球门被攻破，则给对方加分。
+        else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorPlayerCategory {
             ball.physicsBody = nil
             addScore(true)
-        } else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorOpponentCategory {
+        }
+        // 如果对方球门被攻破，则给自己加分。
+        else if firstBody.categoryBitMask == Config.BallCategory && secondBody.categoryBitMask == Config.DoorOpponentCategory {
             ball.physicsBody = nil
             addScore(false)
         }
@@ -268,30 +272,31 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             type = Enum.SendMap.rawValue
         }
         
+        // 接收地图信息。
+        if type == Enum.SendMap.rawValue {
+            mainMap = ESTLocation(fromDictionary: message)
+            let defaults = NSUserDefaults.standardUserDefaults()
+            defaults.setObject(mainMap.toDictionary(), forKey: "location")
+            // 启动位置信息监控。
+            locationManager.startIndoorLocation(mainMap)
+        }
         // 角色移动信息。
-        if type == Enum.MoveAvatar.rawValue {
+        else if type == Enum.MoveAvatar.rawValue {
             let x1: Float? = message.objectForKey("x")?.floatValue
             let y1: Float? = message.objectForKey("y")?.floatValue
 
             let x: CGFloat = CGFloat(x1!)
             let y: CGFloat = CGFloat(y1!)
             
-            let move = SKAction.moveTo(Ball.getSafePosition(x, y: y), duration: self.motionManager.accelerometerUpdateInterval)
-            self.ball.runAction(move)
-        }
-        // 接收地图信息。
-        else if type == Enum.SendMap.rawValue {
-            mainMap = ESTLocation(fromDictionary: message)
-            
-            // 启动位置信息监控。
-            locationManager.startIndoorLocation(mainMap)
+            let move = SKAction.moveTo(Math.positionTurnover(Avatar.getSafePosition(x, y: y)), duration: motionManager.accelerometerUpdateInterval)
+            self.avatarOpponent.runAction(move)
         }
         // 角色旋转信息。
         else if type == Enum.RotateAvatar.rawValue {
             let r1: Float? = message.objectForKey("radians")?.floatValue
             let r: CGFloat = CGFloat(r1!)
 
-            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: 0.5)
+            let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: motionManager.deviceMotionUpdateInterval)
             self.avatarOpponent.runAction(rotate)
         }
         // 对方发球信息。
@@ -306,6 +311,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 ball.removeFromParent()
                 ball = nil
             }
+            
+            // 只要对方发球，双方都要停止闪烁。
+            avatarPlayer.stopShining()
+            avatarOpponent.stopShining()
             
             ball = Ball.getBall(Config.BallRadius, position: Math.positionTurnover(CGPoint(x: x, y: y)))
             ball.fillColor =  UIColor(netHex: Config.ButtonColor)
@@ -350,6 +359,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 if isNearTheBall() {
                     ball.removeFromParent()
                     ball = nil
+                    AudioServicesPlayAlertSound(SystemSoundID(kSystemSoundID_Vibrate))
                     makeBall()
                 }
             }
@@ -357,10 +367,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func isNearTheBall() -> Bool {
-        println("x: \(ball.position.x), y: \(ball.position.y)")
-        let x = avatarPlayer.position.x - ball.position.x
-        let y = avatarPlayer.position.y - ball.position.y
-        if sqrt(x * x + y * y) <= Config.BallRadius + Config.AvatarRadius * 2 {
+        if Math.getDistance(ball.position, p2: avatarPlayer.position) <= Config.BallRadius + Config.AvatarRadius * 2 {
             return true
         }
         return false
@@ -448,10 +455,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         // 设置计分板。
         scoreBoardBox = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScoreBoardBoxSize)
         scoreBoardBox.position = Config.ScoreBoardBoxPosition
-//        scoreBoardBox.addChild(scoreBoardPlayer)
-//        scoreBoardBox.addChild(scoreBoardOpponent)
-//        scoreBoardBox.addChild(scoreBoardPlayerPipe)
-//        scoreBoardBox.addChild(scoreBoardOpponentPipe)
         scoreBoardBox.addChildren([scoreBoardPlayer, scoreBoardOpponent, scoreBoardPlayerPipe, scoreBoardOpponentPipe])
         scoreBoardPlayer.hidden = true
         scoreBoardPlayer.position = Config.ScoreBoardPlayerPosition
@@ -488,11 +491,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
 
         let fadeOut = SKAction.fadeOutWithDuration(0.01)
         let scaleToZero = SKAction.scaleTo(0, duration: 0.01)
-        scoreBoardPlayer.runAction(SKAction.group([fadeOut, scaleToZero]))
-        scoreBoardOpponent.runAction(SKAction.group([fadeOut, scaleToZero]))
-        scoreBoardPlayerPipe.runAction(SKAction.group([fadeOut, scaleToZero]))
-        scoreBoardOpponentPipe.runAction(SKAction.group([fadeOut, scaleToZero]))
-        menu.runAction(SKAction.group([fadeOut, scaleToZero]))
+        runAction([scoreBoardPlayer, scoreBoardOpponent, scoreBoardPlayerPipe, scoreBoardOpponentPipe, menu], action: SKAction.group([fadeOut, scaleToZero]))
         
         // 设置游戏界面物理属性。
         let physicsBody = SKPhysicsBody(edgeLoopFromRect: Config.GameBoardRect)
@@ -556,11 +555,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             if !isGaming {
                 connectWithPlayer()
             } else {
-//            if isServing {
-//                makeBall()
-//                avatarPlayer.stopShining()
-//                isServing = false
-//            }
                 showMenu(true, delay: 0.1)
             }
         } else if sender == buttonResume {
@@ -575,7 +569,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         let defaults = NSUserDefaults.standardUserDefaults()
         let location = defaults.dictionaryForKey("location")
         if location == nil {
-            showLocationSetup()
+//            showLocationSetup()
         }
         
         // 切换广播状态。
@@ -728,7 +722,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             fadeAll(true)
             menu.hidden = false
             let delay = SKAction.waitForDuration(delay)
-            let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.6)
+            let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.4)
             let bigger = SKAction.scaleTo(1.1, duration: 0.2)
             bigger.timingMode = .EaseIn
             let biggerSmaller = SKAction.scaleTo(0.9, duration: 0.1)

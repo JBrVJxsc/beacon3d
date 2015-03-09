@@ -85,8 +85,8 @@ struct Config {
     static var ScoreBoardMarge: CGFloat = BorderWidth * 1.5
     static var ScoreBoardSize: CGSize = CGSize(width: ScoreBoardBoxWidth / 3, height: ScoreBoardBoxHeight / 3)
     static var ScoreBoardBorderWidth: CGFloat = BorderWidth
-    static var ScoreBoardPlayerPosition: CGPoint = CGPoint(x: (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 + ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 3.1)
-    static var ScoreBoardOpponentPosition: CGPoint = CGPoint(x: ScoreBoardBoxWidth - (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 - ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 3.1)
+    static var ScoreBoardPlayerPosition: CGPoint = CGPoint(x: (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 + ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 3.4)
+    static var ScoreBoardOpponentPosition: CGPoint = CGPoint(x: ScoreBoardBoxWidth - (ScoreBoardSize.width + ScoreBoardBorderWidth) / 2 - ScoreBoardMarge, y: -Config.ScoreBoardBoxHeight / 3.4)
     static var ScoreBoardPipeColor: Int = BorderColor
     static var ScoreBoardPipeSize: CGSize = CGSize(width: BorderWidth,height: -ScoreBoardPlayerPosition.y - (ScoreBoardSize.height + ScoreBoardBorderWidth) / 2)
     static var ScoreBoardPipePlayerPosition: CGPoint = CGPoint(x: ScoreBoardPlayerPosition.x, y: -ScoreBoardPipeSize.height / 2)

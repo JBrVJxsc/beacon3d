@@ -69,7 +69,7 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
         let background = SKSpriteNode(color: UIColor(netHex: Config.BackgroungColor), size: Config.ScreenSize)
         background.position = Config.BackgroundPosition
         
-        let title = SKLabelNode(text: "Beacon 3D")
+        let title = SKLabelNode(text: "Air Hockey")
         title.fontName = "HelveticaNeue-Bold"
         title.fontSize = title.fontSize * 1.5
         title.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
