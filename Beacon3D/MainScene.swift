@@ -11,6 +11,7 @@ import SpriteKit
 class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
     
     var location = ESTLocation()
+    var gameScene: GameScene!
     let buttonPlay = Button(circleOfRadius: Config.ButtonRadius)
     let buttonConfigure = Button(circleOfRadius: Config.ButtonRadius)
     let buttonRanking = Button(circleOfRadius: Config.ButtonRadius)
@@ -103,7 +104,7 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
     
     func didPress(sender: Button) {
         if sender == buttonPlay {
-            let gameScene = GameScene(size: skView.bounds.size)
+            gameScene = GameScene(size: skView.bounds.size)
             gameScene.viewController = self.viewController
             gameScene.gameSceneExitDelegate = self
             
@@ -121,5 +122,7 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
     
     func gameSceneDidExit(sender: GameScene) {
         skView.presentScene(self, transition: SKTransition.fadeWithDuration(1.5))
+        gameScene.removeFromParent()
+        gameScene = nil
     }
 }

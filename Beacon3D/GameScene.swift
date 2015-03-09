@@ -288,7 +288,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let x: CGFloat = CGFloat(x1!)
             let y: CGFloat = CGFloat(y1!)
             
-            let move = SKAction.moveTo(Math.positionTurnover(Avatar.getSafePosition(x, y: y)), duration: motionManager.accelerometerUpdateInterval)
+            let move = SKAction.moveTo(Math.positionTurnover(CGPoint(x: x, y: y)), duration: motionManager.accelerometerUpdateInterval)
             self.avatarOpponent.runAction(move)
         }
         // 角色旋转信息。
