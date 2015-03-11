@@ -77,6 +77,24 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func initSensors() {
         
+        // 检测玩家旋转。
+        if motionManager.deviceMotionAvailable {
+            motionManager.deviceMotionUpdateInterval = 1 / 4
+            motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
+                (data: CMDeviceMotion!, error: NSError!) -> Void in
+                
+                // 如果不在游戏中，则不检测。
+                if !self.isGaming {
+                    return
+                }
+                
+                // 旋转角色。
+                self.avatarPlayerCurrentRadians = data.attitude.yaw
+                let rotate = SKAction.rotateToAngle(CGFloat(self.avatarPlayerCurrentRadians), duration: self.motionManager.deviceMotionUpdateInterval)
+                self.avatarPlayer.runAction(rotate)
+            })
+        }
+        
         // 检测玩家移动。
         if  motionManager.accelerometerAvailable {
             let speed = 25.0
@@ -106,24 +124,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
                 self.sendMessage(messageDict)
             }
-        }
-        
-        // 检测玩家旋转。
-        if motionManager.deviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 1 / 4
-            motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
-            (data: CMDeviceMotion!, error: NSError!) -> Void in
-                
-                // 如果不在游戏中，则不检测。
-                if !self.isGaming {
-                    return
-                }
-                
-                // 旋转角色。
-                self.avatarPlayerCurrentRadians = data.attitude.yaw
-                let rotate = SKAction.rotateToAngle(CGFloat(self.avatarPlayerCurrentRadians), duration: self.motionManager.deviceMotionUpdateInterval)
-                self.avatarPlayer.runAction(rotate)
-            })
         }
     }
     
@@ -288,7 +288,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             let x: CGFloat = CGFloat(x1!)
             let y: CGFloat = CGFloat(y1!)
             
-            let move = SKAction.moveTo(Math.positionTurnover(CGPoint(x: x, y: y)), duration: motionManager.accelerometerUpdateInterval)
+            let move = SKAction.moveTo(Math.positionTurnover(Avatar.getSafePosition(x, y: y)), duration: motionManager.accelerometerUpdateInterval)
             self.avatarOpponent.runAction(move)
         }
         // 角色旋转信息。
