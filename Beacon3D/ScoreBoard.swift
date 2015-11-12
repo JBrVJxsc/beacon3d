@@ -41,7 +41,7 @@ class ScoreBoard: SKShapeNode {
         let group = SKAction.group([fadeIn, SKAction.sequence([bigger, biggerSmaller, biggerSmallerBigger])])
         let seq = SKAction.sequence([delay, group])
         runAction(seq, completion: { () -> Void in
-            self.setScore(0)
+            self._setScore(0)
         })
     }
     
@@ -55,10 +55,10 @@ class ScoreBoard: SKShapeNode {
     
     func addScore() {
         score++
-        setScore(score)
+        _setScore(score)
     }
     
-    func setScore(score: Int) {
+    func _setScore(score: Int) {
         let bigger = SKAction.scaleTo(1.1, duration: 0.15)
         bigger.timingMode = .EaseOut
         let smaller = SKAction.scaleTo(0, duration: 0.15)

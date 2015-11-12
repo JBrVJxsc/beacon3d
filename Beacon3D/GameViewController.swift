@@ -27,7 +27,7 @@ class GameViewController: UIViewController {
         let skView = gamingView as SKView
         skView.multipleTouchEnabled = false
         
-        // 禁止屏幕自动熄灭。
+        // Disable screen auto-off.
         UIApplication.sharedApplication().idleTimerDisabled = true
         
         // Create and configure the scene.
@@ -48,9 +48,9 @@ class GameViewController: UIViewController {
         return true
     }
     
-    override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent) {
+    override func motionEnded(motion: UIEventSubtype, withEvent event: UIEvent?) {
         if motionEndedDelegate != nil {
-            motionEndedDelegate.didMotionEnded(motion, withEvent: event)
+            motionEndedDelegate.didMotionEnded(motion, withEvent: event!)
         }
     }
 }

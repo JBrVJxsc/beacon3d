@@ -80,18 +80,17 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         // 检测玩家旋转。
         if motionManager.deviceMotionAvailable {
             motionManager.deviceMotionUpdateInterval = 1 / 4
-            motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue(), withHandler: {
-                (data: CMDeviceMotion!, error: NSError!) -> Void in
-                
-                // 如果不在游戏中，则不检测。
-                if !self.isGaming {
-                    return
-                }
-                
-                // 旋转角色。
-                self.avatarPlayerCurrentRadians = data.attitude.yaw
-                let rotate = SKAction.rotateToAngle(CGFloat(self.avatarPlayerCurrentRadians), duration: self.motionManager.deviceMotionUpdateInterval)
-                self.avatarPlayer.runAction(rotate)
+            motionManager.startDeviceMotionUpdatesToQueue(NSOperationQueue.currentQueue()!, withHandler: {
+                (data: Optional<CMDeviceMotion>, error: Optional<NSError>) in
+                    // 如果不在游戏中，则不检测。
+                    if !self.isGaming {
+                        return
+                    }
+
+                    // 旋转角色。
+                    self.avatarPlayerCurrentRadians = data!.attitude.yaw
+                    let rotate = SKAction.rotateToAngle(CGFloat(self.avatarPlayerCurrentRadians), duration: self.motionManager.deviceMotionUpdateInterval)
+                    self.avatarPlayer.runAction(rotate)
             })
         }
         
@@ -99,30 +98,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         if  motionManager.accelerometerAvailable {
             let speed = 25.0
             motionManager.accelerometerUpdateInterval = 1.0 / 5.0
-            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()) {
-                (data : CMAccelerometerData!, error: NSError!) in
-                
-                // 如果不在游戏中，则不检测。
-                if !self.isGaming {
-                    return
-                }
-                
-                // 设置玩家自身位置。
-                let x = self.avatarPlayer.position.x + CGFloat(data.acceleration.x * speed)
-                let y = self.avatarPlayer.position.y + CGFloat(data.acceleration.y * speed)
-                
-                let position = Avatar.getSafePosition(x, y: y)
-                let dis = Math.getDistance(self.avatarPlayer.position.x, y1: self.avatarPlayer.position.y, x2: position.x, y2: position.y)
-                if dis > 18 {
-                    return
-                }
-                
-                let move = SKAction.moveTo(position, duration: self.motionManager.accelerometerUpdateInterval)
-                self.avatarPlayer.runAction(move)
+            motionManager.startAccelerometerUpdatesToQueue(NSOperationQueue.currentQueue()!) {
+                (data : Optional<CMAccelerometerData>, error: Optional<NSError>) in
+                    // 如果不在游戏中，则不检测。
+                    if !self.isGaming {
+                        return
+                    }
 
-                // 发送位置信息。
-                let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
-                self.sendMessage(messageDict)
+                    // 设置玩家自身位置。
+                    let x = self.avatarPlayer.position.x + CGFloat(data!.acceleration.x * speed)
+                    let y = self.avatarPlayer.position.y + CGFloat(data!.acceleration.y * speed)
+
+                    let position = Avatar.getSafePosition(x, y: y)
+                    let dis = Math.getDistance(self.avatarPlayer.position.x, y1: self.avatarPlayer.position.y, x2: position.x, y2: position.y)
+                    if dis > 18 {
+                        return
+                    }
+
+                    let move = SKAction.moveTo(position, duration: self.motionManager.accelerometerUpdateInterval)
+                    self.avatarPlayer.runAction(move)
+
+                    // 发送位置信息。
+                    let messageDict = ["type": Enum.MoveAvatar.rawValue, "x": x, "y": y]
+                    self.sendMessage(messageDict)
             }
         }
     }
@@ -243,7 +241,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         // 如果当前是主机，则将地图发送给对方。
         if isHolder {
             let defaults = NSUserDefaults.standardUserDefaults()
-            let temp = defaults.dictionaryForKey("location")?
+            let temp = defaults.dictionaryForKey("location")
             if temp != nil {
                 let map = defaults.dictionaryForKey("location")!
                 mainMap = ESTLocation(fromDictionary: map)
@@ -262,10 +260,18 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func handleReceivedDataWithNotification(notification: NSNotification) {
         let userInfo = notification.userInfo! as Dictionary
-        let receivedData: NSData = userInfo["data"] as NSData
-        
-        let message = NSJSONSerialization.JSONObjectWithData(receivedData, options: NSJSONReadingOptions.AllowFragments, error: nil) as NSDictionary
-        
+        let receivedData: NSData = userInfo["data"] as! NSData
+
+        do {
+            let message = try NSJSONSerialization.JSONObjectWithData(receivedData, options: NSJSONReadingOptions.AllowFragments) as! NSDictionary
+            processReceivedData(message)
+        } catch {
+
+        }
+
+    }
+    
+    func processReceivedData(message: NSDictionary) {
         var type = message.objectForKey("type") as? String
         let mapType = message.objectForKey("creationDate") as? String
         if mapType != nil {
@@ -274,32 +280,32 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         
         // 接收地图信息。
         if type == Enum.SendMap.rawValue {
-            mainMap = ESTLocation(fromDictionary: message)
+            mainMap = ESTLocation(fromDictionary: message as [NSObject : AnyObject])
             let defaults = NSUserDefaults.standardUserDefaults()
             defaults.setObject(mainMap.toDictionary(), forKey: "location")
             // 启动位置信息监控。
             locationManager.startIndoorLocation(mainMap)
         }
-        // 角色移动信息。
+            // 角色移动信息。
         else if type == Enum.MoveAvatar.rawValue {
             let x1: Float? = message.objectForKey("x")?.floatValue
             let y1: Float? = message.objectForKey("y")?.floatValue
-
+            
             let x: CGFloat = CGFloat(x1!)
             let y: CGFloat = CGFloat(y1!)
             
             let move = SKAction.moveTo(Math.positionTurnover(Avatar.getSafePosition(x, y: y)), duration: motionManager.accelerometerUpdateInterval)
             self.avatarOpponent.runAction(move)
         }
-        // 角色旋转信息。
+            // 角色旋转信息。
         else if type == Enum.RotateAvatar.rawValue {
             let r1: Float? = message.objectForKey("radians")?.floatValue
             let r: CGFloat = CGFloat(r1!)
-
+            
             let rotate = SKAction.rotateToAngle(avatarOpponentDefaultRotation + r, duration: motionManager.deviceMotionUpdateInterval)
             self.avatarOpponent.runAction(rotate)
         }
-        // 对方发球信息。
+            // 对方发球信息。
         else if type == Enum.SendBall.rawValue {
             var x1: Float? = message.objectForKey("x")?.floatValue
             var y1: Float? = message.objectForKey("y")?.floatValue
@@ -324,7 +330,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             
             x = CGFloat(x1!)
             y = CGFloat(y1!)
-
+            
             let vector = Math.vectorTurnover(CGVector(dx: x, dy: y))
             ball.physicsBody?.velocity = vector
             addChild(ball)
@@ -332,11 +338,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didUpdatePosition position: ESTOrientedPoint!, inLocation location: ESTLocation!) {
-        
         let text = NSString(format: "x: %.2f   y: %.2f    α: %.2f",
             position.x,
             position.y,
             position.orientation)
+        print(text)
     }
     
     func indoorLocationManager(manager: ESTIndoorLocationManager!, didFailToUpdatePositionWithError error: NSError!) {
@@ -386,8 +392,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func sendMessage(obj: AnyObject) {
-        let messageData = NSJSONSerialization.dataWithJSONObject(obj, options: NSJSONWritingOptions.PrettyPrinted, error: nil)
-        appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable, error: nil)
+        do {
+            let messageData = try NSJSONSerialization.dataWithJSONObject(obj, options: NSJSONWritingOptions.PrettyPrinted)
+            do {
+                try appDelegate.mpcHandler.session.sendData(messageData, toPeers: self.appDelegate.mpcHandler.session.connectedPeers, withMode: MCSessionSendDataMode.Reliable)
+            } catch {
+                
+            }
+        } catch {
+            
+        }
     }
     
     func serveBall(isOpponent: Bool) {
@@ -612,7 +626,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     
     func peerChangedStateWithNotification(notification: NSNotification) {
         let userInfo = NSDictionary(dictionary: notification.userInfo!)
-        let state = userInfo.objectForKey("state") as Int
+        let state = userInfo.objectForKey("state") as! Int
         
         // 如果连接成功。
         if state == MCSessionState.Connected.rawValue {
@@ -622,7 +636,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
             startGame()
         }
         
-        println(state)
+        print(state)
     }
     
     func sendRotateMessage() {
@@ -637,7 +651,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
     }
     
     func initMPC() {
-        appDelegate = UIApplication.sharedApplication().delegate as AppDelegate
+        appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
         appDelegate.mpcHandler.setupPeerWithDisplayName(UIDevice.currentDevice().name)
         appDelegate.mpcHandler.setupSession()
         
@@ -765,11 +779,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
         /* Setup your scene here */
     }
     
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         /* Called when a touch begins */
     }
     
-    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         
     }
     

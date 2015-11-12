@@ -23,7 +23,7 @@ class Button: SKShapeNode {
     var isAnimating: Bool = false
     var buttonPressDelegate: ButtonPressDelegate!
     var buttonBorder: SKShapeNode!
-    var scale: CGFloat = 1.0
+    var _scale: CGFloat = 1.0
     
     override init() {
         super.init()
@@ -46,7 +46,7 @@ class Button: SKShapeNode {
     
     override func setScale(scale: CGFloat) {
         super.setScale(scale)
-        self.scale = scale
+        self._scale = scale
     }
     
     func addLabel(text: String) {
@@ -59,17 +59,17 @@ class Button: SKShapeNode {
     }
     
     func startShining(duration: NSTimeInterval) {
-        let smaller = SKAction.scaleTo(scale * 0.8, duration: duration)
+        let smaller = SKAction.scaleTo(_scale * 0.8, duration: duration)
         smaller.timingMode = .EaseOut
-        let bigger = SKAction.scaleTo(scale * 1.1, duration: 0.2)
+        let bigger = SKAction.scaleTo(_scale * 1.1, duration: 0.2)
         bigger.timingMode = .EaseIn
-        let biggerSmaller = SKAction.scaleTo(scale * 0.9, duration: 0.1)
-        let biggerSmallerBigger = SKAction.scaleTo(scale * 1.0, duration: 0.1)
+        let biggerSmaller = SKAction.scaleTo(_scale * 0.9, duration: 0.1)
+        let biggerSmallerBigger = SKAction.scaleTo(_scale * 1.0, duration: 0.1)
         let forever = SKAction.repeatActionForever(SKAction.sequence([smaller, bigger, biggerSmaller, biggerSmallerBigger]))
         runAction(forever)
     }
     
-    override func touchesBegan(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesBegan(touches: Set<UITouch>, withEvent event: UIEvent?) {
         if (allowLongPress) {
         
             if isAnimating {
@@ -92,7 +92,7 @@ class Button: SKShapeNode {
         strokeColor = UIColor(netHex: Config.ButtonBorderColor)
     }
     
-    override func touchesEnded(touches: NSSet, withEvent event: UIEvent) {
+    override func touchesEnded(touches: Set<UITouch>, withEvent event: UIEvent?) {
         if (allowLongPress) {
             timer.invalidate()
         }
@@ -123,12 +123,12 @@ class Button: SKShapeNode {
         isAnimating = true
         
         if isWaiting {
-            let bigger = SKAction.scaleTo(scale * 1.1, duration: 0.25)
+            let bigger = SKAction.scaleTo(_scale * 1.1, duration: 0.25)
             bigger.timingMode = .EaseOut
-            let smaller = SKAction.scaleTo(scale * 0.6, duration: 0.2)
+            let smaller = SKAction.scaleTo(_scale * 0.6, duration: 0.2)
             smaller.timingMode = .EaseIn
-            let smallerBigger = SKAction.scaleTo(scale * 0.7, duration: 0.1)
-            let smallerBiggerSmaller = SKAction.scaleTo(scale * 0.6, duration: 0.1)
+            let smallerBigger = SKAction.scaleTo(_scale * 0.7, duration: 0.1)
+            let smallerBiggerSmaller = SKAction.scaleTo(_scale * 0.6, duration: 0.1)
             runAction(SKAction.sequence([bigger, smaller,smallerBigger, smallerBiggerSmaller]), completion: { () -> Void in
                 self.isAnimating = false
             })
@@ -139,12 +139,12 @@ class Button: SKShapeNode {
         } else {
             removeAllActions()
             let fadeIn = SKAction.fadeAlphaTo(1.0, duration: 0.6)
-            let smaller = SKAction.scaleTo(scale * 0.5, duration: 0.2)
+            let smaller = SKAction.scaleTo(_scale * 0.5, duration: 0.2)
             smaller.timingMode = .EaseOut
-            let bigger = SKAction.scaleTo(scale * 1.1, duration: 0.2)
+            let bigger = SKAction.scaleTo(_scale * 1.1, duration: 0.2)
             bigger.timingMode = .EaseIn
-            let biggerSmaller = SKAction.scaleTo(scale * 0.9, duration: 0.1)
-            let biggerSmallerBigger = SKAction.scaleTo(scale * 1.0, duration: 0.1)
+            let biggerSmaller = SKAction.scaleTo(_scale * 0.9, duration: 0.1)
+            let biggerSmallerBigger = SKAction.scaleTo(_scale * 1.0, duration: 0.1)
             runAction(SKAction.group([fadeIn, SKAction.sequence([smaller, bigger, biggerSmaller, biggerSmallerBigger])]), completion: { () -> Void in
                 self.isAnimating = false
             })

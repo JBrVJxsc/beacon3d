@@ -109,7 +109,7 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
             gameScene.gameSceneExitDelegate = self
             
             // 将ViewController的Shake Motion传递给GameScene。
-            (viewController as GameViewController).motionEndedDelegate = gameScene
+            (viewController as! GameViewController).motionEndedDelegate = gameScene
             skView.presentScene(gameScene, transition: SKTransition.fadeWithDuration(1.5))
         } else if sender == buttonConfigure {
             showLocationSetup()
