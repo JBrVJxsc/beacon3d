@@ -563,7 +563,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate, MCBrowserViewControllerDeleg
                 return
             }
             if isHolder && !isGaming {
-                startGame()
+                //startGame()
                 return
             }
             if !isGaming {
