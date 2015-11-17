@@ -2,7 +2,6 @@
 //  GameScene.swift
 //  Beacon3D
 //
-//  Created by Xu ZHANG on 2/21/15.
 //  Copyright (c) 2015 Xu ZHANG. All rights reserved.
 //
 
@@ -108,7 +107,7 @@ class MainScene: SKScene, ButtonPressDelegate, GameSceneExitDelegate {
             gameScene.viewController = self.viewController
             gameScene.gameSceneExitDelegate = self
             
-            // 将ViewController的Shake Motion传递给GameScene。
+            // Passing the shake motion to GameScene.
             (viewController as! GameViewController).motionEndedDelegate = gameScene
             skView.presentScene(gameScene, transition: SKTransition.fadeWithDuration(1.5))
         } else if sender == buttonConfigure {

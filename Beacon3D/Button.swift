@@ -2,7 +2,6 @@
 //  Button.swift
 //  Beacon3D
 //
-//  Created by Xu ZHANG on 1/12/15.
 //  Copyright (c) 2015 Xu ZHANG. All rights reserved.
 //
 
@@ -52,7 +51,6 @@ class Button: SKShapeNode {
     func addLabel(text: String) {
         let label = SKLabelNode(text: text)
         label.fontName = "HelveticaNeue-Bold"
-//        label.fontSize = label.fontSize * 1.5
         label.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.Center
         label.verticalAlignmentMode = SKLabelVerticalAlignmentMode.Center
         addChild(label)
