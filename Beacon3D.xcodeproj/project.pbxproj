@@ -71,7 +71,7 @@
 		95FDAAB81A9CF29700A860BD /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FDAAB71A9CF29700A860BD /* AVFoundation.framework */; };
 		95FDAABA1A9CF2A000A860BD /* MediaPlayer.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FDAAB91A9CF2A000A860BD /* MediaPlayer.framework */; };
 		95FDAABC1A9CF2AA00A860BD /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 95FDAABB1A9CF2AA00A860BD /* MessageUI.framework */; };
-		E91F365E1BFAE7310038D6A7 /* LowPassFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F365D1BFAE7310038D6A7 /* LowPassFilter.swift */; };
+		E91F36601BFC3DC40038D6A7 /* LowPassFilter.swift in Sources */ = {isa = PBXBuildFile; fileRef = E91F365F1BFC3DC40038D6A7 /* LowPassFilter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -186,7 +186,7 @@
 		95FDAAB71A9CF29700A860BD /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		95FDAAB91A9CF2A000A860BD /* MediaPlayer.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MediaPlayer.framework; path = System/Library/Frameworks/MediaPlayer.framework; sourceTree = SDKROOT; };
 		95FDAABB1A9CF2AA00A860BD /* MessageUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MessageUI.framework; path = System/Library/Frameworks/MessageUI.framework; sourceTree = SDKROOT; };
-		E91F365D1BFAE7310038D6A7 /* LowPassFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LowPassFilter.swift; path = ../LowPassFilter.swift; sourceTree = "<group>"; };
+		E91F365F1BFC3DC40038D6A7 /* LowPassFilter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LowPassFilter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -249,7 +249,6 @@
 		954466561A634A1100EF690B /* Beacon3D */ = {
 			isa = PBXGroup;
 			children = (
-				E91F365D1BFAE7310038D6A7 /* LowPassFilter.swift */,
 				954466591A634A1100EF690B /* AppDelegate.swift */,
 				95B308C91A992944003D54AD /* MainScene.swift */,
 				9544665D1A634A1100EF690B /* GameScene.swift */,
@@ -269,6 +268,7 @@
 				95BB97BB1AA4F28600548F87 /* ScoreBoard.swift */,
 				95BB97BD1AA511D400548F87 /* Math.swift */,
 				95BB97BF1AA6803300548F87 /* Enum.swift */,
+				E91F365F1BFC3DC40038D6A7 /* LowPassFilter.swift */,
 			);
 			path = Beacon3D;
 			sourceTree = "<group>";
@@ -554,7 +554,7 @@
 				9544665E1A634A1100EF690B /* GameScene.swift in Sources */,
 				95BB97BE1AA511D400548F87 /* Math.swift in Sources */,
 				95B308CA1A992944003D54AD /* MainScene.swift in Sources */,
-				E91F365E1BFAE7310038D6A7 /* LowPassFilter.swift in Sources */,
+				E91F36601BFC3DC40038D6A7 /* LowPassFilter.swift in Sources */,
 				9507D9AF1A64935900B25793 /* MPCHandler.swift in Sources */,
 				95BB97C01AA6803300548F87 /* Enum.swift in Sources */,
 				95BB97BC1AA4F28600548F87 /* ScoreBoard.swift in Sources */,

@@ -9,7 +9,7 @@ class LowPassFilter {
     var smoothed: CGFloat = 0
     var smoothing: CGFloat = 148
     var lastUpdate: CFAbsoluteTime = 0.0
-
+    
     func filter(newValue: CGFloat) -> CGFloat {
         let now = CFAbsoluteTimeGetCurrent()
         if (lastUpdate == 0.0) {
